@@ -19,20 +19,24 @@ public sealed class Win32WindowInspector : IWindowInspector
         var isToolWindow = (Win32.GetWindowLongPtr(handle, Win32.GWL_EXSTYLE).ToInt64() & Win32.WS_EX_TOOLWINDOW) != 0;
         var isCloaked = TryGetCloaked(handle);
         var title = GetWindowTitle(handle);
+        var className = GetClassName(handle);
         var processId = GetProcessId(handle);
-        var processName = GetProcessName(processId);
+        var processName = NormalizeProcessName(GetProcessName(processId), className);
         var bounds = TryGetBounds(handle);
+        var hasOwnerWindow = Win32.GetWindow(handle, Win32.GW_OWNER) != 0;
 
         return new WindowInfo(
             handle,
             processId,
             processName,
             title,
+            className,
             isVisible,
             isMinimized,
             isToolWindow,
             isCloaked,
             isShellWindow,
+            hasOwnerWindow,
             bounds);
     }
 
@@ -70,6 +74,28 @@ public sealed class Win32WindowInspector : IWindowInspector
         {
             return string.Empty;
         }
+    }
+
+    private static string GetClassName(nint handle)
+    {
+        var builder = new StringBuilder(256);
+        var length = Win32.GetClassName(handle, builder, builder.Capacity);
+        return length <= 0 ? string.Empty : builder.ToString();
+    }
+
+    private static string NormalizeProcessName(string processName, string className)
+    {
+        if (!string.IsNullOrWhiteSpace(processName))
+        {
+            return processName;
+        }
+
+        if (!string.IsNullOrWhiteSpace(className))
+        {
+            return className;
+        }
+
+        return "Unknown";
     }
 
     private static bool TryGetCloaked(nint handle)

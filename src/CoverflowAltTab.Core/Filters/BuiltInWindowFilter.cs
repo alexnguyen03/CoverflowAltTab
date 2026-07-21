@@ -5,6 +5,15 @@ namespace CoverflowAltTab.Core.Filters;
 
 public sealed class BuiltInWindowFilter : IWindowFilterRule
 {
+    private static readonly HashSet<string> ExcludedClassNames = new(StringComparer.Ordinal)
+    {
+        "Progman",
+        "Shell_TrayWnd",
+        "DV2ControlHost",
+        "Windows.UI.Core.CoreWindow",
+        "OperationStatusWindow",
+    };
+
     private readonly int _hostProcessId;
 
     public BuiltInWindowFilter(int hostProcessId)
@@ -16,26 +25,51 @@ public sealed class BuiltInWindowFilter : IWindowFilterRule
 
     public bool ShouldInclude(WindowInfo window)
     {
+        return GetExclusionReason(window) is null;
+    }
+
+    public string? GetExclusionReason(WindowInfo window)
+    {
         if (window.ProcessId == _hostProcessId)
         {
-            return false;
+            return "host-process";
         }
 
         if (!window.IsVisible)
         {
-            return false;
+            return "invisible";
         }
 
         if (string.IsNullOrWhiteSpace(window.Title))
         {
-            return false;
+            return "empty-title";
         }
 
-        if (window.IsToolWindow || window.IsCloaked || window.IsShellWindow)
+        if (window.IsToolWindow)
         {
-            return false;
+            return "tool-window";
         }
 
-        return true;
+        if (window.IsCloaked)
+        {
+            return "cloaked";
+        }
+
+        if (window.IsShellWindow)
+        {
+            return "shell-window";
+        }
+
+        if (window.HasOwnerWindow)
+        {
+            return "owned-window";
+        }
+
+        if (ExcludedClassNames.Contains(window.ClassName))
+        {
+            return $"class:{window.ClassName}";
+        }
+
+        return null;
     }
 }

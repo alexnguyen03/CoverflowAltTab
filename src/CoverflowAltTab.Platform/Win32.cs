@@ -7,6 +7,7 @@ internal static class Win32
 {
     internal const int WH_KEYBOARD_LL = 13;
     internal const int GWL_EXSTYLE = -20;
+    internal const uint GW_OWNER = 4;
     internal const int VK_SPACE = 0x20;
     internal const int VK_SHIFT = 0x10;
     internal const int VK_CONTROL = 0x11;
@@ -50,8 +51,14 @@ internal static class Win32
     [DllImport("user32.dll", SetLastError = true)]
     internal static extern bool GetWindowRect(nint hWnd, out RECT lpRect);
 
+    [DllImport("user32.dll", SetLastError = true)]
+    internal static extern nint GetWindow(nint hWnd, uint uCmd);
+
     [DllImport("user32.dll", EntryPoint = "GetWindowLongPtrW", SetLastError = true)]
     internal static extern nint GetWindowLongPtr(nint hWnd, int nIndex);
+
+    [DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+    internal static extern int GetClassName(nint hWnd, StringBuilder lpClassName, int nMaxCount);
 
     [DllImport("dwmapi.dll")]
     internal static extern int DwmGetWindowAttribute(nint hwnd, int dwAttribute, out int pvAttribute, int cbAttribute);

@@ -91,7 +91,9 @@ public sealed class SwitcherApplication : IDisposable
 
         var originalForegroundWindowHandle = _foregroundWindowService.GetForegroundWindowHandle();
         var rawWindows = _windowEnumerationService.EnumerateWindows();
-        var filters = ResolveFilters();
+        var builtInFilter = new BuiltInWindowFilter(_hostProcessId);
+        LogBuiltInFilterSummary(rawWindows, builtInFilter);
+        var filters = ResolveFilters(builtInFilter);
         var sortRule = ResolveSortRule();
 
         var result = _sessionController.OpenSession(rawWindows, originalForegroundWindowHandle, filters, sortRule);
@@ -211,9 +213,14 @@ public sealed class SwitcherApplication : IDisposable
 
     private IReadOnlyList<IWindowFilterRule> ResolveFilters()
     {
+        return ResolveFilters(new BuiltInWindowFilter(_hostProcessId));
+    }
+
+    private IReadOnlyList<IWindowFilterRule> ResolveFilters(BuiltInWindowFilter builtInFilter)
+    {
         var filters = new List<IWindowFilterRule>
         {
-            new BuiltInWindowFilter(_hostProcessId),
+            builtInFilter,
         };
 
         foreach (var extensionFilter in _extensionRegistry.WindowFilters)
@@ -222,6 +229,28 @@ public sealed class SwitcherApplication : IDisposable
         }
 
         return filters;
+    }
+
+    private void LogBuiltInFilterSummary(
+        IReadOnlyList<WindowInfo> rawWindows,
+        BuiltInWindowFilter builtInFilter)
+    {
+        var reasonCounts = rawWindows
+            .Select(window => builtInFilter.GetExclusionReason(window))
+            .Where(reason => reason is not null)
+            .GroupBy(reason => reason!, StringComparer.Ordinal)
+            .OrderByDescending(group => group.Count())
+            .ThenBy(group => group.Key, StringComparer.Ordinal)
+            .ToArray();
+
+        if (reasonCounts.Length == 0)
+        {
+            _logger.Debug("Built-in filter summary: no windows excluded by built-in rules.");
+            return;
+        }
+
+        var summary = string.Join(", ", reasonCounts.Select(group => $"{group.Key}={group.Count()}"));
+        _logger.Debug($"Built-in filter summary: {summary}");
     }
 
     private IWindowSortRule ResolveSortRule()
