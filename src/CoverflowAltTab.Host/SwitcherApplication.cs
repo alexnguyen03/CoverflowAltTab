@@ -20,6 +20,7 @@ public sealed class SwitcherApplication : IDisposable
     private readonly IWindowEnumerationService _windowEnumerationService;
     private readonly IForegroundWindowService _foregroundWindowService;
     private readonly IWindowActivationService _windowActivationService;
+    private readonly IWindowThumbnailService _windowThumbnailService;
     private readonly OverlayController _overlayController;
     private readonly IHotkeyService _hotkeyService;
     private readonly IKeyboardMonitorService _keyboardMonitorService;
@@ -34,6 +35,7 @@ public sealed class SwitcherApplication : IDisposable
         IWindowEnumerationService windowEnumerationService,
         IForegroundWindowService foregroundWindowService,
         IWindowActivationService windowActivationService,
+        IWindowThumbnailService windowThumbnailService,
         OverlayController overlayController,
         IHotkeyService hotkeyService,
         IKeyboardMonitorService keyboardMonitorService,
@@ -46,6 +48,7 @@ public sealed class SwitcherApplication : IDisposable
         _windowEnumerationService = windowEnumerationService;
         _foregroundWindowService = foregroundWindowService;
         _windowActivationService = windowActivationService;
+        _windowThumbnailService = windowThumbnailService;
         _overlayController = overlayController;
         _hotkeyService = hotkeyService;
         _keyboardMonitorService = keyboardMonitorService;
@@ -61,6 +64,7 @@ public sealed class SwitcherApplication : IDisposable
         _keyboardMonitorService.KeyEventReceived += OnKeyEventReceived;
         _overlayController.CommandRequested += OnOverlayCommandRequested;
         _overlayController.OverlayDeactivated += OnOverlayDeactivated;
+        _overlayController.PreviewBoundsChanged += OnPreviewBoundsChanged;
         _hotkeyService.Start();
         _keyboardMonitorService.Start();
         _debugWindowController.SetHotkeyStatus("Registered: Ctrl + Shift + Space");
@@ -73,8 +77,10 @@ public sealed class SwitcherApplication : IDisposable
         _keyboardMonitorService.KeyEventReceived -= OnKeyEventReceived;
         _overlayController.CommandRequested -= OnOverlayCommandRequested;
         _overlayController.OverlayDeactivated -= OnOverlayDeactivated;
+        _overlayController.PreviewBoundsChanged -= OnPreviewBoundsChanged;
         _hotkeyService.Stop();
         _keyboardMonitorService.Stop();
+        _windowThumbnailService.Dispose();
         _overlayController.Dispose();
     }
 
@@ -139,7 +145,8 @@ public sealed class SwitcherApplication : IDisposable
                 if (_sessionController.MoveNext() && _sessionController.CurrentSession is not null)
                 {
                     Application.Current.Dispatcher.BeginInvoke(() => _overlayController.UpdateSession(_sessionController.CurrentSession));
-                    _debugWindowController.SetLastAction($"Selection moved: {_sessionController.CurrentSession.SelectedIndex}");
+                _debugWindowController.SetLastAction($"Selection moved: {_sessionController.CurrentSession.SelectedIndex}");
+                RefreshThumbnail();
                 }
                 break;
             case OverlayCommand.Previous:
@@ -147,6 +154,7 @@ public sealed class SwitcherApplication : IDisposable
                 {
                     Application.Current.Dispatcher.BeginInvoke(() => _overlayController.UpdateSession(_sessionController.CurrentSession));
                     _debugWindowController.SetLastAction($"Selection moved: {_sessionController.CurrentSession.SelectedIndex}");
+                    RefreshThumbnail();
                 }
                 break;
             case OverlayCommand.Commit:
@@ -175,9 +183,15 @@ public sealed class SwitcherApplication : IDisposable
         CancelSession();
     }
 
+    private void OnPreviewBoundsChanged(object? sender, EventArgs e)
+    {
+        RefreshThumbnail();
+    }
+
     private void CommitSession()
     {
         var result = _sessionController.CommitCurrentSession();
+        _windowThumbnailService.Clear();
         Application.Current.Dispatcher.BeginInvoke(() => _overlayController.HideOverlay());
 
         if (!result.Success || result.SelectedWindow is null)
@@ -199,6 +213,7 @@ public sealed class SwitcherApplication : IDisposable
         var originalForegroundWindowHandle = _sessionController.CurrentSession?.OriginalForegroundWindowHandle ?? 0;
         if (_sessionController.CancelCurrentSession())
         {
+            _windowThumbnailService.Clear();
             Application.Current.Dispatcher.BeginInvoke(() => _overlayController.HideOverlay());
             if (originalForegroundWindowHandle != 0)
             {
@@ -251,6 +266,35 @@ public sealed class SwitcherApplication : IDisposable
 
         var summary = string.Join(", ", reasonCounts.Select(group => $"{group.Key}={group.Count()}"));
         _logger.Debug($"Built-in filter summary: {summary}");
+    }
+
+    private void RefreshThumbnail()
+    {
+        var session = _sessionController.CurrentSession;
+        if (session is null)
+        {
+            _windowThumbnailService.Clear();
+            return;
+        }
+
+        if (_overlayController.WindowHandle == 0)
+        {
+            return;
+        }
+
+        if (!_overlayController.TryGetPreviewBounds(out var bounds))
+        {
+            return;
+        }
+
+        var success = _windowThumbnailService.TryShowThumbnail(
+            _overlayController.WindowHandle,
+            session.SelectedWindow.Handle,
+            bounds);
+
+        _debugWindowController.SetLastAction(success
+            ? $"Thumbnail: {session.SelectedWindow.Title}"
+            : $"Thumbnail unavailable: {session.SelectedWindow.Title}");
     }
 
     private IWindowSortRule ResolveSortRule()

@@ -22,6 +22,9 @@ internal static class Win32
     internal const int MOD_SHIFT = 0x0004;
     internal const int WS_EX_TOOLWINDOW = 0x00000080;
     internal const int DWMWA_CLOAKED = 14;
+    internal const uint DWM_TNP_RECTDESTINATION = 0x00000001;
+    internal const uint DWM_TNP_VISIBLE = 0x00000008;
+    internal const uint DWM_TNP_OPACITY = 0x00000004;
     internal const int SW_RESTORE = 9;
 
     internal delegate bool EnumWindowsProc(nint hWnd, nint lParam);
@@ -62,6 +65,15 @@ internal static class Win32
 
     [DllImport("dwmapi.dll")]
     internal static extern int DwmGetWindowAttribute(nint hwnd, int dwAttribute, out int pvAttribute, int cbAttribute);
+
+    [DllImport("dwmapi.dll")]
+    internal static extern int DwmRegisterThumbnail(nint dest, nint src, out nint thumbnailId);
+
+    [DllImport("dwmapi.dll")]
+    internal static extern int DwmUnregisterThumbnail(nint thumbnailId);
+
+    [DllImport("dwmapi.dll")]
+    internal static extern int DwmUpdateThumbnailProperties(nint hThumbnail, ref DWM_THUMBNAIL_PROPERTIES properties);
 
     [DllImport("user32.dll")]
     internal static extern nint GetForegroundWindow();
@@ -111,5 +123,18 @@ internal static class Win32
         public uint flags;
         public uint time;
         public nuint dwExtraInfo;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct DWM_THUMBNAIL_PROPERTIES
+    {
+        public uint dwFlags;
+        public RECT rcDestination;
+        public RECT rcSource;
+        public byte opacity;
+        [MarshalAs(UnmanagedType.Bool)]
+        public bool fVisible;
+        [MarshalAs(UnmanagedType.Bool)]
+        public bool fSourceClientAreaOnly;
     }
 }

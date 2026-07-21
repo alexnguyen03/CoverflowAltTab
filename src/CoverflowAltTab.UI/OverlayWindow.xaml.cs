@@ -1,5 +1,7 @@
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Interop;
+using CoverflowAltTab.Core.Models;
 
 namespace CoverflowAltTab.UI;
 
@@ -13,6 +15,10 @@ public partial class OverlayWindow : Window
     public event EventHandler<OverlayCommandRequestedEventArgs>? CommandRequested;
 
     public event EventHandler<OverlayDeactivatedEventArgs>? OverlayDeactivated;
+
+    public event EventHandler? PreviewBoundsChanged;
+
+    public nint WindowHandle => new WindowInteropHelper(this).Handle;
 
     protected override void OnPreviewKeyDown(KeyEventArgs e)
     {
@@ -47,5 +53,44 @@ public partial class OverlayWindow : Window
     {
         base.OnDeactivated(e);
         OverlayDeactivated?.Invoke(this, new OverlayDeactivatedEventArgs());
+    }
+
+    protected override void OnLocationChanged(EventArgs e)
+    {
+        base.OnLocationChanged(e);
+        PreviewBoundsChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
+    {
+        base.OnRenderSizeChanged(sizeInfo);
+        PreviewBoundsChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    public bool TryGetPreviewBounds(out WindowBounds bounds)
+    {
+        bounds = default;
+        if (!IsLoaded || !IsVisible || PreviewHost.ActualWidth <= 0 || PreviewHost.ActualHeight <= 0)
+        {
+            return false;
+        }
+
+        var relative = PreviewHost.TransformToAncestor(this).Transform(new Point(0, 0));
+        var source = PresentationSource.FromVisual(this);
+        if (source?.CompositionTarget is null)
+        {
+            return false;
+        }
+
+        var transform = source.CompositionTarget.TransformToDevice;
+        var topLeft = transform.Transform(relative);
+        var bottomRight = transform.Transform(new Point(relative.X + PreviewHost.ActualWidth, relative.Y + PreviewHost.ActualHeight));
+
+        bounds = new WindowBounds(
+            (int)Math.Round(topLeft.X),
+            (int)Math.Round(topLeft.Y),
+            (int)Math.Round(bottomRight.X),
+            (int)Math.Round(bottomRight.Y));
+        return true;
     }
 }

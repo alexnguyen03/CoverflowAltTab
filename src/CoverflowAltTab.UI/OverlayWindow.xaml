@@ -26,6 +26,22 @@
                        Margin="0,4,0,12"
                        Foreground="#FFC9C9C9"
                        FontSize="11" />
+            <Border x:Name="PreviewHost"
+                    Height="180"
+                    Margin="0,0,0,12"
+                    Background="#18000000"
+                    BorderBrush="#225C5C5C"
+                    BorderThickness="1"
+                    CornerRadius="10"
+                    SnapsToDevicePixels="True">
+                <Grid>
+                    <TextBlock Text="Selected window preview"
+                               Margin="12"
+                               VerticalAlignment="Top"
+                               Foreground="#88FFFFFF"
+                               FontSize="11" />
+                </Grid>
+            </Border>
             <ItemsControl ItemsSource="{Binding Windows}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>

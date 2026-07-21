@@ -52,6 +52,7 @@ public partial class App : Application
             new WindowEnumerationService(new Win32WindowInspector()),
             new ForegroundWindowService(),
             new WindowActivationService(),
+            new DwmWindowThumbnailService(),
             new OverlayController(new ListOverlayRenderer()),
             _hotkeyService,
             _keyboardMonitorService,
