@@ -26,6 +26,7 @@ internal static class Win32
     internal const uint DWM_TNP_VISIBLE = 0x00000008;
     internal const uint DWM_TNP_OPACITY = 0x00000004;
     internal const int SW_RESTORE = 9;
+    internal const int SW_SHOW = 5;
 
     internal delegate bool EnumWindowsProc(nint hWnd, nint lParam);
     internal delegate nint LowLevelKeyboardProc(int nCode, nint wParam, nint lParam);
@@ -35,6 +36,9 @@ internal static class Win32
 
     [DllImport("user32.dll")]
     internal static extern bool IsWindowVisible(nint hWnd);
+
+    [DllImport("user32.dll")]
+    internal static extern bool IsWindow(nint hWnd);
 
     [DllImport("user32.dll")]
     internal static extern bool IsIconic(nint hWnd);
@@ -47,6 +51,9 @@ internal static class Win32
 
     [DllImport("user32.dll")]
     internal static extern uint GetWindowThreadProcessId(nint hWnd, out uint processId);
+
+    [DllImport("kernel32.dll")]
+    internal static extern uint GetCurrentThreadId();
 
     [DllImport("user32.dll")]
     internal static extern nint GetShellWindow();
@@ -81,6 +88,18 @@ internal static class Win32
     [DllImport("user32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
     internal static extern bool SetForegroundWindow(nint hWnd);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    internal static extern bool BringWindowToTop(nint hWnd);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    internal static extern nint SetActiveWindow(nint hWnd);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    internal static extern nint SetFocus(nint hWnd);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    internal static extern bool AttachThreadInput(uint idAttach, uint idAttachTo, bool fAttach);
 
     [DllImport("user32.dll", SetLastError = true)]
     internal static extern bool ShowWindowAsync(nint hWnd, int nCmdShow);

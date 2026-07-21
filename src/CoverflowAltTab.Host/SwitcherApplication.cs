@@ -15,6 +15,7 @@ namespace CoverflowAltTab.Host;
 public sealed class SwitcherApplication : IDisposable
 {
     private const string? PreferredSortStrategyId = null;
+    private static readonly TimeSpan OverlayDismissGracePeriod = TimeSpan.FromMilliseconds(300);
 
     private readonly SessionController _sessionController;
     private readonly IWindowEnumerationService _windowEnumerationService;
@@ -29,6 +30,8 @@ public sealed class SwitcherApplication : IDisposable
     private readonly int _hostProcessId;
     private readonly DebugWindowController _debugWindowController;
     private readonly DefaultStableSortStrategy _defaultSortStrategy = new();
+    private DateTimeOffset _lastOverlayShownAt = DateTimeOffset.MinValue;
+    private bool _isOverlayClosing;
 
     public SwitcherApplication(
         SessionController sessionController,
@@ -116,6 +119,8 @@ public sealed class SwitcherApplication : IDisposable
         _logger.Info($"Overlay shown for session {result.Session.SessionId}.");
         _debugWindowController.SetSessionStatus($"Open ({result.Session.Windows.Count} windows)");
         _debugWindowController.SetLastAction($"Overlay shown: {result.Session.SessionId}");
+        _lastOverlayShownAt = DateTimeOffset.UtcNow;
+        _isOverlayClosing = false;
         Application.Current.Dispatcher.BeginInvoke(() =>
         {
             try
@@ -173,6 +178,19 @@ public sealed class SwitcherApplication : IDisposable
             return;
         }
 
+        if (_isOverlayClosing)
+        {
+            _logger.Debug("Ignored overlay deactivation because the overlay is already closing.");
+            return;
+        }
+
+        var elapsed = DateTimeOffset.UtcNow - _lastOverlayShownAt;
+        if (elapsed < OverlayDismissGracePeriod)
+        {
+            _logger.Debug($"Ignored overlay deactivation during grace period ({elapsed.TotalMilliseconds:F0} ms).");
+            return;
+        }
+
         if (!_extensionRegistry.OverlayDismissBehaviors.Any(behavior => behavior.CancelOnOverlayLostFocus))
         {
             return;
@@ -191,6 +209,7 @@ public sealed class SwitcherApplication : IDisposable
     private void CommitSession()
     {
         var result = _sessionController.CommitCurrentSession();
+        _isOverlayClosing = true;
         _windowThumbnailService.Clear();
         Application.Current.Dispatcher.BeginInvoke(() => _overlayController.HideOverlay());
 
@@ -213,6 +232,7 @@ public sealed class SwitcherApplication : IDisposable
         var originalForegroundWindowHandle = _sessionController.CurrentSession?.OriginalForegroundWindowHandle ?? 0;
         if (_sessionController.CancelCurrentSession())
         {
+            _isOverlayClosing = true;
             _windowThumbnailService.Clear();
             Application.Current.Dispatcher.BeginInvoke(() => _overlayController.HideOverlay());
             if (originalForegroundWindowHandle != 0)
