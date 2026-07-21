@@ -8,6 +8,8 @@ public sealed class ExtensionLoader
 {
     private readonly ExtensionRegistry _registry;
     private readonly ILogger _logger;
+    private const string SupportedManifestVersion = "1";
+    private const string SupportedApiVersion = "1";
 
     public ExtensionLoader(ExtensionRegistry registry, ILogger logger)
     {
@@ -111,7 +113,27 @@ public sealed class ExtensionLoader
                 ];
             }
 
+            var validationError = ValidateManifest(manifest);
+            if (validationError is not null)
+            {
+                _logger.Error($"Extension manifest '{manifestPath}' is invalid: {validationError}");
+                return
+                [
+                    new ExtensionLoadResult(manifestPath, manifest.Id, manifest.Name, manifest.Version, manifest.Description, false, validationError, 0, 0, 0),
+                ];
+            }
+
             var assemblyPath = Path.GetFullPath(Path.Combine(extensionsDirectory, manifest.Assembly));
+            if (!File.Exists(assemblyPath))
+            {
+                var message = $"Assembly '{manifest.Assembly}' was not found next to the manifest.";
+                _logger.Error($"Extension manifest '{manifestPath}' is invalid: {message}");
+                return
+                [
+                    new ExtensionLoadResult(manifestPath, manifest.Id, manifest.Name, manifest.Version, manifest.Description, false, message, 0, 0, 0),
+                ];
+            }
+
             loadedAssemblyPaths.Add(assemblyPath);
 
             var assembly = AssemblyLoadContext.Default.LoadFromAssemblyPath(assemblyPath);
@@ -119,6 +141,15 @@ public sealed class ExtensionLoader
             if (!string.IsNullOrWhiteSpace(manifest.EntryType))
             {
                 types = types.Where(type => string.Equals(type.FullName, manifest.EntryType, StringComparison.Ordinal)).ToArray();
+                if (types.Count == 0)
+                {
+                    var message = $"Entry type '{manifest.EntryType}' was not found in assembly '{manifest.Assembly}'.";
+                    _logger.Error($"Extension manifest '{manifestPath}' is invalid: {message}");
+                    return
+                    [
+                        new ExtensionLoadResult(manifestPath, manifest.Id, manifest.Name, manifest.Version, manifest.Description, false, message, 0, 0, 0),
+                    ];
+                }
             }
 
             var results = new List<ExtensionLoadResult>();
@@ -173,6 +204,46 @@ public sealed class ExtensionLoader
                 new ExtensionLoadResult(manifestPath, string.Empty, Path.GetFileNameWithoutExtension(manifestPath), "1.0.0", string.Empty, false, ex.Message, 0, 0, 0),
             ];
         }
+    }
+
+    private static string? ValidateManifest(ExtensionManifest manifest)
+    {
+        if (string.IsNullOrWhiteSpace(manifest.ManifestVersion))
+        {
+            return "ManifestVersion is required.";
+        }
+
+        if (!string.Equals(manifest.ManifestVersion, SupportedManifestVersion, StringComparison.Ordinal))
+        {
+            return $"ManifestVersion '{manifest.ManifestVersion}' is not supported.";
+        }
+
+        if (string.IsNullOrWhiteSpace(manifest.ApiVersion))
+        {
+            return "ApiVersion is required.";
+        }
+
+        if (!string.Equals(manifest.ApiVersion, SupportedApiVersion, StringComparison.Ordinal))
+        {
+            return $"ApiVersion '{manifest.ApiVersion}' is not supported.";
+        }
+
+        if (string.IsNullOrWhiteSpace(manifest.Id))
+        {
+            return "Id is required.";
+        }
+
+        if (string.IsNullOrWhiteSpace(manifest.Name))
+        {
+            return "Name is required.";
+        }
+
+        if (string.IsNullOrWhiteSpace(manifest.Assembly))
+        {
+            return "Assembly is required.";
+        }
+
+        return null;
     }
 
     private static IReadOnlyList<Type> GetExtensionTypes(Assembly assembly)

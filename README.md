@@ -60,12 +60,60 @@ Build the sample extension into the host `extensions/` folder:
 dotnet build .\extensions\SampleExtension\SampleExtension.csproj -m:1
 ```
 
+Build the second sample extension:
+
+```powershell
+dotnet build .\extensions\AlphabeticalSortExtension\AlphabeticalSortExtension.csproj -m:1
+```
+
 Recommended dev flow:
 
 ```powershell
 dotnet build .\extensions\SampleExtension\SampleExtension.csproj -m:1
+dotnet build .\extensions\AlphabeticalSortExtension\AlphabeticalSortExtension.csproj -m:1
 dotnet run --project .\src\CoverflowAltTab.Host\CoverflowAltTab.Host.csproj
 ```
+
+## Extension Development
+
+Extensions are loaded from the host output folder:
+
+```text
+src/CoverflowAltTab.Host/bin/Debug/net8.0-windows/extensions/
+```
+
+Current sample extensions:
+
+- `SampleExtension`: dismiss the overlay when it loses focus or when the user clicks outside it.
+- `AlphabeticalSortExtension`: register an alphabetical window sort strategy.
+
+Each external extension should ship:
+
+- one `.dll`
+- one `.manifest.json`
+
+Manifest shape:
+
+```json
+{
+  "manifestVersion": "1",
+  "apiVersion": "1",
+  "id": "sample.extension-id",
+  "name": "Readable Extension Name",
+  "version": "1.0.0",
+  "assembly": "SampleExtension.dll",
+  "entryType": "SampleExtension.SampleExtension",
+  "description": "What this extension contributes."
+}
+```
+
+The debug window shows:
+
+- extension load status
+- name and version
+- feature description
+- contribution counts
+- load/validation message
 
 ## Suggested Repository Layout
 

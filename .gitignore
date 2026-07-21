@@ -16,5 +16,5 @@ src/CoverflowAltTab.UI/bin/
 src/CoverflowAltTab.UI/obj/
 src/CoverflowAltTab.Extensibility/bin/
 src/CoverflowAltTab.Extensibility/obj/
-extensions/SampleExtension/bin/
-extensions/SampleExtension/obj/
+extensions/*/bin/
+extensions/*/obj/

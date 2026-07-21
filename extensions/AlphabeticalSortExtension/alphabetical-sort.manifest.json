@@ -1,0 +1,10 @@
+{
+  "manifestVersion": "1",
+  "apiVersion": "1",
+  "id": "sample.sort-alphabetically",
+  "name": "Alphabetical Sort",
+  "version": "1.0.0",
+  "assembly": "AlphabeticalSortExtension.dll",
+  "entryType": "AlphabeticalSortExtension.AlphabeticalSortExtension",
+  "description": "Registers a sort strategy that orders windows alphabetically by title."
+}

@@ -1,4 +1,6 @@
 {
+  "manifestVersion": "1",
+  "apiVersion": "1",
   "id": "sample.dismiss-on-lost-focus",
   "name": "Dismiss On Lost Focus",
   "version": "1.0.0",
