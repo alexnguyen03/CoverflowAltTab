@@ -12,6 +12,7 @@ namespace CoverflowAltTab.Host;
 
 public partial class App : Application
 {
+    private const bool UseCoverflowRenderer = true;
     private IHotkeyService? _hotkeyService;
     private IKeyboardMonitorService? _keyboardMonitorService;
     private SwitcherApplication? _switcherApplication;
@@ -53,7 +54,7 @@ public partial class App : Application
             new ForegroundWindowService(),
             new WindowActivationService(),
             new DwmWindowThumbnailService(),
-            new OverlayController(new ListOverlayRenderer()),
+            new OverlayController(CreateOverlayRenderer()),
             _hotkeyService,
             _keyboardMonitorService,
             registry,
@@ -71,5 +72,12 @@ public partial class App : Application
         _keyboardMonitorService?.Dispose();
         _hotkeyService?.Dispose();
         base.OnExit(e);
+    }
+
+    private static IOverlayRenderer CreateOverlayRenderer()
+    {
+        return UseCoverflowRenderer
+            ? new CoverflowOverlayRenderer()
+            : new ListOverlayRenderer();
     }
 }

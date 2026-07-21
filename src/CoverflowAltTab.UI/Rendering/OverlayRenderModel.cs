@@ -11,4 +11,10 @@ public sealed class OverlayRenderModel
     public required IReadOnlyList<OverlayRenderItem> Items { get; init; }
 
     public int SelectedIndex { get; set; }
+
+    public bool UsesFreeformLayout { get; init; }
+
+    public double StageWidth { get; init; }
+
+    public double StageHeight { get; init; }
 }

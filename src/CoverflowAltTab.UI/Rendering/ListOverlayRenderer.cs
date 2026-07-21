@@ -18,6 +18,14 @@ public sealed class ListOverlayRenderer : IOverlayRenderer
                 Title = window.Title,
                 Subtitle = string.IsNullOrWhiteSpace(window.ProcessName) ? "Unknown" : window.ProcessName,
                 IsSelected = index == session.SelectedIndex,
+                X = 0,
+                Y = index * 72,
+                Width = 0,
+                Height = 64,
+                Scale = 1d,
+                Rotation = 0d,
+                Opacity = 1d,
+                ZIndex = session.Windows.Count - index,
             });
         }
 
@@ -28,6 +36,9 @@ public sealed class ListOverlayRenderer : IOverlayRenderer
             HeaderSubtitle = $"Sort: {session.ActiveSortStrategyId}",
             Items = items,
             SelectedIndex = session.SelectedIndex,
+            UsesFreeformLayout = false,
+            StageWidth = 0,
+            StageHeight = 0,
         };
     }
 

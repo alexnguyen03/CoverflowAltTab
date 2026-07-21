@@ -56,7 +56,7 @@ public sealed class OverlayController : IDisposable
         else
         {
             _renderer.UpdateSelection(_currentModel, session.SelectedIndex);
-            _viewModel.UpdateSelection(session.SelectedIndex);
+            _viewModel.UpdateSelection(_currentModel);
         }
 
         _window.Dispatcher.BeginInvoke(() =>
