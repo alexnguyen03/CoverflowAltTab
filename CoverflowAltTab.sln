@@ -1,0 +1,55 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{79745422-55EB-45BE-BFE7-7A2302441500}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CoverflowAltTab.Core", "src\CoverflowAltTab.Core\CoverflowAltTab.Core.csproj", "{15CD8020-EE36-4D6A-92E5-074786C54D5E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CoverflowAltTab.Platform", "src\CoverflowAltTab.Platform\CoverflowAltTab.Platform.csproj", "{7AFABAA8-D6F0-4A58-B65D-32515C800998}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CoverflowAltTab.UI", "src\CoverflowAltTab.UI\CoverflowAltTab.UI.csproj", "{1C78BCF7-E20B-4237-9FE4-0731ACD07EE3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CoverflowAltTab.Extensibility", "src\CoverflowAltTab.Extensibility\CoverflowAltTab.Extensibility.csproj", "{29C08EE5-B95D-4018-A407-07FDE4AF8DED}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CoverflowAltTab.Host", "src\CoverflowAltTab.Host\CoverflowAltTab.Host.csproj", "{A08D7507-6F1E-437F-AFF7-778FDCAFD54B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{15CD8020-EE36-4D6A-92E5-074786C54D5E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{15CD8020-EE36-4D6A-92E5-074786C54D5E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{15CD8020-EE36-4D6A-92E5-074786C54D5E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{15CD8020-EE36-4D6A-92E5-074786C54D5E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7AFABAA8-D6F0-4A58-B65D-32515C800998}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7AFABAA8-D6F0-4A58-B65D-32515C800998}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7AFABAA8-D6F0-4A58-B65D-32515C800998}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7AFABAA8-D6F0-4A58-B65D-32515C800998}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1C78BCF7-E20B-4237-9FE4-0731ACD07EE3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1C78BCF7-E20B-4237-9FE4-0731ACD07EE3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1C78BCF7-E20B-4237-9FE4-0731ACD07EE3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1C78BCF7-E20B-4237-9FE4-0731ACD07EE3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{29C08EE5-B95D-4018-A407-07FDE4AF8DED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{29C08EE5-B95D-4018-A407-07FDE4AF8DED}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{29C08EE5-B95D-4018-A407-07FDE4AF8DED}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{29C08EE5-B95D-4018-A407-07FDE4AF8DED}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A08D7507-6F1E-437F-AFF7-778FDCAFD54B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A08D7507-6F1E-437F-AFF7-778FDCAFD54B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A08D7507-6F1E-437F-AFF7-778FDCAFD54B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A08D7507-6F1E-437F-AFF7-778FDCAFD54B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{15CD8020-EE36-4D6A-92E5-074786C54D5E} = {79745422-55EB-45BE-BFE7-7A2302441500}
+		{7AFABAA8-D6F0-4A58-B65D-32515C800998} = {79745422-55EB-45BE-BFE7-7A2302441500}
+		{1C78BCF7-E20B-4237-9FE4-0731ACD07EE3} = {79745422-55EB-45BE-BFE7-7A2302441500}
+		{29C08EE5-B95D-4018-A407-07FDE4AF8DED} = {79745422-55EB-45BE-BFE7-7A2302441500}
+		{A08D7507-6F1E-437F-AFF7-778FDCAFD54B} = {79745422-55EB-45BE-BFE7-7A2302441500}
+	EndGlobalSection
+EndGlobal

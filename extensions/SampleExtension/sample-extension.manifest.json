@@ -1,0 +1,8 @@
+{
+  "id": "sample.dismiss-on-lost-focus",
+  "name": "Dismiss On Lost Focus",
+  "version": "1.0.0",
+  "assembly": "SampleExtension.dll",
+  "entryType": "SampleExtension.SampleExtension",
+  "description": "Cancels the overlay when it loses focus or when the user clicks outside it."
+}

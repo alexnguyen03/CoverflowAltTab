@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\CoverflowAltTab.Core\CoverflowAltTab.Core.csproj" />
+    <ProjectReference Include="..\CoverflowAltTab.Platform\CoverflowAltTab.Platform.csproj" />
+    <ProjectReference Include="..\CoverflowAltTab.UI\CoverflowAltTab.UI.csproj" />
+    <ProjectReference Include="..\CoverflowAltTab.Extensibility\CoverflowAltTab.Extensibility.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+</Project>
