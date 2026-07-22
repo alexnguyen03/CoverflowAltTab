@@ -32,6 +32,7 @@ public sealed class SwitcherApplication : IDisposable
     private readonly DefaultStableSortStrategy _defaultSortStrategy = new();
     private DateTimeOffset _lastOverlayShownAt = DateTimeOffset.MinValue;
     private bool _isOverlayClosing;
+    private nint _pendingPromoteHandle;
 
     public SwitcherApplication(
         SessionController sessionController,
@@ -151,7 +152,8 @@ public sealed class SwitcherApplication : IDisposable
                 {
                     Application.Current.Dispatcher.BeginInvoke(() => _overlayController.UpdateSession(_sessionController.CurrentSession));
                 _debugWindowController.SetLastAction($"Selection moved: {_sessionController.CurrentSession.SelectedIndex}");
-                RefreshThumbnail();
+                _pendingPromoteHandle = _sessionController.CurrentSession.SelectedWindow.Handle;
+                RefreshThumbnails();
                 }
                 break;
             case OverlayCommand.Previous:
@@ -159,7 +161,8 @@ public sealed class SwitcherApplication : IDisposable
                 {
                     Application.Current.Dispatcher.BeginInvoke(() => _overlayController.UpdateSession(_sessionController.CurrentSession));
                     _debugWindowController.SetLastAction($"Selection moved: {_sessionController.CurrentSession.SelectedIndex}");
-                    RefreshThumbnail();
+                    _pendingPromoteHandle = _sessionController.CurrentSession.SelectedWindow.Handle;
+                    RefreshThumbnails();
                 }
                 break;
             case OverlayCommand.Commit:
@@ -203,7 +206,7 @@ public sealed class SwitcherApplication : IDisposable
 
     private void OnPreviewBoundsChanged(object? sender, EventArgs e)
     {
-        RefreshThumbnail();
+        RefreshThumbnails();
     }
 
     private void CommitSession()
@@ -288,7 +291,7 @@ public sealed class SwitcherApplication : IDisposable
         _logger.Debug($"Built-in filter summary: {summary}");
     }
 
-    private void RefreshThumbnail()
+    private void RefreshThumbnails()
     {
         var session = _sessionController.CurrentSession;
         if (session is null)
@@ -302,19 +305,32 @@ public sealed class SwitcherApplication : IDisposable
             return;
         }
 
-        if (!_overlayController.TryGetPreviewBounds(out var bounds))
+        var liveHandles = _overlayController.GetLiveThumbnailWindowHandles();
+        _windowThumbnailService.RetainOnly(liveHandles);
+
+        var selectedHandle = session.SelectedWindow.Handle;
+
+        if (_pendingPromoteHandle != 0 && liveHandles.Contains(_pendingPromoteHandle))
         {
-            return;
+            if (_overlayController.TryGetPreviewBounds(_pendingPromoteHandle, out var promoteBounds))
+            {
+                _windowThumbnailService.BringToFront(_pendingPromoteHandle, promoteBounds, 1d);
+                _pendingPromoteHandle = 0;
+            }
         }
 
-        var success = _windowThumbnailService.TryShowThumbnail(
-            _overlayController.WindowHandle,
-            session.SelectedWindow.Handle,
-            bounds);
+        var shownCount = 0;
+        foreach (var handle in liveHandles)
+        {
+            var opacity = handle == selectedHandle ? 1d : 0.85d;
+            if (_overlayController.TryGetPreviewBounds(handle, out var bounds) &&
+                _windowThumbnailService.TryShowThumbnail(_overlayController.WindowHandle, handle, bounds, opacity))
+            {
+                shownCount++;
+            }
+        }
 
-        _debugWindowController.SetLastAction(success
-            ? $"Thumbnail: {session.SelectedWindow.Title}"
-            : $"Thumbnail unavailable: {session.SelectedWindow.Title}");
+        _debugWindowController.SetLastAction($"Thumbnails live: {shownCount}/{liveHandles.Count}");
     }
 
     private IWindowSortRule ResolveSortRule()

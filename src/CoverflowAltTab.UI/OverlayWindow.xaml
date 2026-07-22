@@ -13,56 +13,38 @@
         AllowsTransparency="True"
         Background="Transparent">
     <Window.Resources>
-        <Style x:Key="CoverflowSurfaceVisibilityStyle" TargetType="Grid">
-            <Setter Property="Visibility" Value="Collapsed" />
+        <Style x:Key="CoverflowSurfaceVisibilityStyle"
+               TargetType="Grid">
+            <Setter Property="Visibility"
+                    Value="Collapsed"/>
             <Style.Triggers>
-                <DataTrigger Binding="{Binding UsesFreeformLayout}" Value="True">
-                    <Setter Property="Visibility" Value="Visible" />
+                <DataTrigger Binding="{Binding UsesFreeformLayout}"
+                             Value="True">
+                    <Setter Property="Visibility"
+                            Value="Visible"/>
                 </DataTrigger>
             </Style.Triggers>
         </Style>
-        <Style x:Key="ListSurfaceVisibilityStyle" TargetType="ItemsControl">
-            <Setter Property="Visibility" Value="Visible" />
+        <Style x:Key="ListSurfaceVisibilityStyle"
+               TargetType="ItemsControl">
+            <Setter Property="Visibility"
+                    Value="Visible"/>
             <Style.Triggers>
-                <DataTrigger Binding="{Binding UsesFreeformLayout}" Value="True">
-                    <Setter Property="Visibility" Value="Collapsed" />
+                <DataTrigger Binding="{Binding UsesFreeformLayout}"
+                             Value="True">
+                    <Setter Property="Visibility"
+                            Value="Collapsed"/>
                 </DataTrigger>
             </Style.Triggers>
         </Style>
     </Window.Resources>
     <Border Background="#D60B0F14"
-            BorderBrush="#223E4D63"
-            BorderThickness="1"
-            CornerRadius="28"
+            CornerRadius="12"
             Padding="24">
         <Grid>
             <Grid Width="{Binding StageWidth}"
                   Height="{Binding StageHeight}"
                   Style="{StaticResource CoverflowSurfaceVisibilityStyle}">
-                <Grid.Background>
-                    <RadialGradientBrush GradientOrigin="0.5,0.35" Center="0.5,0.5" RadiusX="0.85" RadiusY="0.9">
-                        <GradientStop Color="#F11161D" Offset="0" />
-                        <GradientStop Color="#EA0B0F14" Offset="0.58" />
-                        <GradientStop Color="#F706090D" Offset="1" />
-                    </RadialGradientBrush>
-                </Grid.Background>
-
-                <Border HorizontalAlignment="Center"
-                        VerticalAlignment="Center"
-                        Width="700"
-                        Height="280"
-                        CornerRadius="240"
-                        Margin="0,108,0,0"
-                        Opacity="0.22"
-                        IsHitTestVisible="False">
-                    <Border.Background>
-                        <RadialGradientBrush GradientOrigin="0.5,0.5">
-                            <GradientStop Color="#FF61DAFB" Offset="0" />
-                            <GradientStop Color="#0061DAFB" Offset="1" />
-                        </RadialGradientBrush>
-                    </Border.Background>
-                </Border>
-
                 <Rectangle HorizontalAlignment="Center"
                            VerticalAlignment="Bottom"
                            Width="760"
@@ -72,154 +54,63 @@
                            IsHitTestVisible="False">
                     <Rectangle.Fill>
                         <RadialGradientBrush GradientOrigin="0.5,0.45">
-                            <GradientStop Color="#FFFFFFFF" Offset="0" />
-                            <GradientStop Color="#00FFFFFF" Offset="1" />
+                            <GradientStop Color="#FFFFFFFF"
+                                          Offset="0"/>
+                            <GradientStop Color="#00FFFFFF"
+                                          Offset="1"/>
                         </RadialGradientBrush>
                     </Rectangle.Fill>
                 </Rectangle>
 
-                <ItemsControl ItemsSource="{Binding Windows}"
+                <ItemsControl x:Name="CardsItemsControl"
+                              ItemsSource="{Binding Windows}"
                               Width="{Binding StageWidth}"
                               Height="{Binding StageHeight}"
                               IsHitTestVisible="False">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
-                            <Canvas />
+                            <Canvas/>
                         </ItemsPanelTemplate>
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemContainerStyle>
                         <Style TargetType="ContentPresenter">
-                            <Setter Property="motion:MotionAnimator.AnimatedLeft" Value="{Binding X}" />
-                            <Setter Property="motion:MotionAnimator.AnimatedTop" Value="{Binding Y}" />
-                            <Setter Property="Panel.ZIndex" Value="{Binding ZIndex}" />
+                            <Setter Property="motion:MotionAnimator.AnimatedLeft"
+                                    Value="{Binding X}"/>
+                            <Setter Property="motion:MotionAnimator.AnimatedTop"
+                                    Value="{Binding Y}"/>
+                            <Setter Property="Panel.ZIndex"
+                                    Value="{Binding ZIndex}"/>
                         </Style>
                     </ItemsControl.ItemContainerStyle>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <Grid Width="{Binding Width}"
-                                  Height="{Binding Height}"
-                                  RenderTransformOrigin="0.5,0.5"
-                                  motion:MotionAnimator.AnimatedScale="{Binding Scale}"
-                                  motion:MotionAnimator.AnimatedSkewY="{Binding Rotation}"
-                                  motion:MotionAnimator.AnimatedOpacity="{Binding Opacity}">
-                                <Border CornerRadius="22"
-                                        BorderBrush="#1F8BA7C8"
-                                        BorderThickness="1">
-                                    <Border.Background>
-                                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                                            <GradientStop Color="#0BFFFFFF" Offset="0" />
-                                            <GradientStop Color="#14FFFFFF" Offset="1" />
-                                        </LinearGradientBrush>
-                                    </Border.Background>
-                                    <Border.Effect>
-                                        <DropShadowEffect BlurRadius="24"
-                                                          Color="#7F61DAFB"
-                                                          Direction="270"
-                                                          ShadowDepth="0"
-                                                          Opacity="0.55" />
-                                    </Border.Effect>
-                                </Border>
-
-                                <Border Width="150"
-                                        Height="30"
-                                        Margin="14"
-                                        HorizontalAlignment="Left"
-                                        VerticalAlignment="Bottom"
-                                        Background="#C4141A20"
-                                        BorderBrush="#449DDCFF"
-                                        BorderThickness="1"
-                                        CornerRadius="15">
-                                    <TextBlock Text="{Binding Title}"
-                                               Margin="12,0"
-                                               VerticalAlignment="Center"
-                                               Foreground="#FFF4FBFF"
-                                               FontSize="11"
-                                               FontWeight="SemiBold"
-                                               TextTrimming="CharacterEllipsis" />
-                                </Border>
-                            </Grid>
+                            <Border x:Name="PreviewSurface"
+                                    Width="{Binding Width}"
+                                    Height="{Binding Height}"
+                                    ClipToBounds="True"
+                                    RenderTransformOrigin="0.5,0.5"
+                                    motion:MotionAnimator.AnimatedScale="{Binding Scale}"
+                                    motion:MotionAnimator.AnimatedSkewY="{Binding Rotation}"
+                                    motion:MotionAnimator.AnimatedOpacity="{Binding Opacity}"/>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
 
-                <Canvas Width="{Binding StageWidth}"
-                        Height="{Binding StageHeight}"
+                <Border HorizontalAlignment="Center"
+                        VerticalAlignment="Bottom"
+                        Margin="0,0,0,20"
+                        Padding="24,10"
+                        Background="#CC141A20"
+                        CornerRadius="20"
                         IsHitTestVisible="False">
-                    <Grid x:Name="SelectedPreviewHost"
-                          Width="{Binding SelectedPreviewWidth}"
-                          Height="{Binding SelectedPreviewHeight}"
-                          RenderTransformOrigin="0.5,0.5"
-                          motion:MotionAnimator.AnimatedLeft="{Binding SelectedPreviewX}"
-                          motion:MotionAnimator.AnimatedTop="{Binding SelectedPreviewY}"
-                          motion:MotionAnimator.AnimatedWidth="{Binding SelectedPreviewWidth}"
-                          motion:MotionAnimator.AnimatedHeight="{Binding SelectedPreviewHeight}"
-                          motion:MotionAnimator.AnimatedOpacity="{Binding SelectedPreviewOpacity}"
-                          Panel.ZIndex="999">
-                        <Border CornerRadius="26"
-                                Background="#0DFFFFFF"
-                                BorderBrush="#6F61DAFB"
-                                BorderThickness="1.4">
-                            <Border.Effect>
-                                <DropShadowEffect x:Name="PreviewGlow"
-                                                  BlurRadius="44"
-                                                  Color="#FF61DAFB"
-                                                  Direction="270"
-                                                  ShadowDepth="0"
-                                                  Opacity="0.75" />
-                            </Border.Effect>
-                            <Border.Triggers>
-                                <EventTrigger RoutedEvent="Loaded">
-                                    <BeginStoryboard>
-                                        <Storyboard RepeatBehavior="Forever" AutoReverse="True">
-                                            <DoubleAnimation Storyboard.TargetProperty="Effect.Opacity"
-                                                             To="1"
-                                                             Duration="0:0:1.8" />
-                                            <DoubleAnimation Storyboard.TargetProperty="Effect.BlurRadius"
-                                                             To="56"
-                                                             Duration="0:0:1.8" />
-                                        </Storyboard>
-                                    </BeginStoryboard>
-                                </EventTrigger>
-                            </Border.Triggers>
-                        </Border>
-
-                        <Border x:Name="SelectedPreviewSurface"
-                                Margin="10"
-                                CornerRadius="22"
-                                Background="#FF02080D"
-                                ClipToBounds="True">
-                            <Grid>
-                                <Rectangle>
-                                    <Rectangle.Fill>
-                                        <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
-                                            <GradientStop Color="#02000000" Offset="0" />
-                                            <GradientStop Color="#00000000" Offset="0.3" />
-                                            <GradientStop Color="#A0000000" Offset="1" />
-                                        </LinearGradientBrush>
-                                    </Rectangle.Fill>
-                                </Rectangle>
-                            </Grid>
-                        </Border>
-
-                        <Border Width="180"
-                                Height="34"
-                                Margin="18"
-                                HorizontalAlignment="Left"
-                                VerticalAlignment="Bottom"
-                                Background="#CC121A21"
-                                BorderBrush="#5A61DAFB"
-                                BorderThickness="1"
-                                CornerRadius="17">
-                            <TextBlock Text="{Binding SelectedBadgeTitle}"
-                                       Margin="14,0"
-                                       VerticalAlignment="Center"
-                                       Foreground="White"
-                                       FontSize="12"
-                                       FontWeight="SemiBold"
-                                       TextTrimming="CharacterEllipsis" />
-                        </Border>
-                    </Grid>
-                </Canvas>
+                    <TextBlock Text="{Binding SelectedTitle}"
+                               Foreground="#FFF4FBFF"
+                               FontSize="16"
+                               FontWeight="SemiBold"
+                               TextTrimming="CharacterEllipsis"
+                               MaxWidth="640"
+                               HorizontalAlignment="Center"/>
+                </Border>
             </Grid>
 
             <ItemsControl ItemsSource="{Binding Windows}"
@@ -232,10 +123,13 @@
                                 CornerRadius="10">
                             <Border.Style>
                                 <Style TargetType="Border">
-                                    <Setter Property="Background" Value="#22FFFFFF" />
+                                    <Setter Property="Background"
+                                            Value="#22FFFFFF"/>
                                     <Style.Triggers>
-                                        <DataTrigger Binding="{Binding IsSelected}" Value="True">
-                                            <Setter Property="Background" Value="#FF0E639C" />
+                                        <DataTrigger Binding="{Binding IsSelected}"
+                                                     Value="True">
+                                            <Setter Property="Background"
+                                                    Value="#FF0E639C"/>
                                         </DataTrigger>
                                     </Style.Triggers>
                                 </Style>
@@ -243,7 +137,7 @@
                             <TextBlock Text="{Binding Title}"
                                        Foreground="White"
                                        FontSize="14"
-                                       TextTrimming="CharacterEllipsis" />
+                                       TextTrimming="CharacterEllipsis"/>
                         </Border>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>

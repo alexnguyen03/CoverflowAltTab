@@ -6,7 +6,11 @@ public sealed class OverlayRenderItem
 
     public required string Subtitle { get; init; }
 
+    public required nint WindowHandle { get; init; }
+
     public bool IsSelected { get; set; }
+
+    public bool HasLiveThumbnail { get; set; }
 
     public double X { get; set; }
 

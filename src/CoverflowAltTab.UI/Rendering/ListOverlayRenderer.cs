@@ -17,6 +17,7 @@ public sealed class ListOverlayRenderer : IOverlayRenderer
             {
                 Title = window.Title,
                 Subtitle = string.IsNullOrWhiteSpace(window.ProcessName) ? "Unknown" : window.ProcessName,
+                WindowHandle = window.Handle,
                 IsSelected = index == session.SelectedIndex,
                 X = 0,
                 Y = index * 72,

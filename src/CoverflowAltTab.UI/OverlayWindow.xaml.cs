@@ -1,4 +1,5 @@
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Interop;
 using CoverflowAltTab.Core.Models;
@@ -10,7 +11,7 @@ public partial class OverlayWindow : Window
     public OverlayWindow()
     {
         InitializeComponent();
-        SelectedPreviewHost.LayoutUpdated += OnSelectedPreviewHostLayoutUpdated;
+        CardsItemsControl.LayoutUpdated += OnCardsLayoutUpdated;
     }
 
     public event EventHandler<OverlayCommandRequestedEventArgs>? CommandRequested;
@@ -68,15 +69,50 @@ public partial class OverlayWindow : Window
         PreviewBoundsChanged?.Invoke(this, EventArgs.Empty);
     }
 
-    public bool TryGetPreviewBounds(out WindowBounds bounds)
+    public IReadOnlyList<nint> GetLiveThumbnailWindowHandles()
+    {
+        return CardsItemsControl.ItemsSource is IEnumerable<WindowListItemViewModel> items
+            ? items.Where(item => item.HasLiveThumbnail).Select(item => item.WindowHandle).ToList()
+            : Array.Empty<nint>();
+    }
+
+    public bool TryGetPreviewBounds(nint windowHandle, out WindowBounds bounds)
     {
         bounds = default;
-        if (!IsLoaded || !IsVisible || SelectedPreviewSurface.ActualWidth <= 0 || SelectedPreviewSurface.ActualHeight <= 0)
+
+        if (!IsLoaded || !IsVisible)
         {
             return false;
         }
 
-        var relative = SelectedPreviewSurface.TransformToAncestor(this).Transform(new Point(0, 0));
+        if (CardsItemsControl.ItemsSource is not IEnumerable<WindowListItemViewModel> items)
+        {
+            return false;
+        }
+
+        var item = items.FirstOrDefault(candidate => candidate.WindowHandle == windowHandle);
+        if (item is null)
+        {
+            return false;
+        }
+
+        if (CardsItemsControl.ItemContainerGenerator.ContainerFromItem(item) is not ContentPresenter container)
+        {
+            return false;
+        }
+
+        container.ApplyTemplate();
+
+        if (container.ContentTemplate?.FindName("PreviewSurface", container) is not FrameworkElement surface ||
+            surface.ActualWidth <= 0 || surface.ActualHeight <= 0)
+        {
+            return false;
+        }
+
+        var toWindow = surface.TransformToAncestor(this);
+        var topLeftWindow = toWindow.Transform(new Point(0, 0));
+        var bottomRightWindow = toWindow.Transform(new Point(surface.ActualWidth, surface.ActualHeight));
+
         var source = PresentationSource.FromVisual(this);
         if (source?.CompositionTarget is null)
         {
@@ -84,8 +120,8 @@ public partial class OverlayWindow : Window
         }
 
         var transform = source.CompositionTarget.TransformToDevice;
-        var topLeft = transform.Transform(relative);
-        var bottomRight = transform.Transform(new Point(relative.X + SelectedPreviewSurface.ActualWidth, relative.Y + SelectedPreviewSurface.ActualHeight));
+        var topLeft = transform.Transform(topLeftWindow);
+        var bottomRight = transform.Transform(bottomRightWindow);
 
         bounds = new WindowBounds(
             (int)Math.Round(topLeft.X),
@@ -95,7 +131,7 @@ public partial class OverlayWindow : Window
         return true;
     }
 
-    private void OnSelectedPreviewHostLayoutUpdated(object? sender, EventArgs e)
+    private void OnCardsLayoutUpdated(object? sender, EventArgs e)
     {
         if (IsVisible)
         {

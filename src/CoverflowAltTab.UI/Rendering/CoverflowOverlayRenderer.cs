@@ -4,18 +4,17 @@ namespace CoverflowAltTab.UI.Rendering;
 
 public sealed class CoverflowOverlayRenderer : IOverlayRenderer
 {
-    private const double StageWidth = 1080d;
-    private const double StageHeight = 420d;
-    private const double SelectedWidth = 520d;
-    private const double SelectedHeight = 300d;
-    private const double SideWidth = 320d;
-    private const double SideHeight = 186d;
-    private const double CenterX = (StageWidth - SelectedWidth) / 2d;
-    private const double CenterY = 56d;
-    private const double RadiusX = 360d;
-    private const double RadiusY = 88d;
-    private const double StepAngle = 0.62d;
-    private const double MaxAngle = 1.92d;
+    private const double StageWidth = 1600d;
+    private const double StageHeight = 550d;
+    private const double CardWidth = 460d;
+    private const double CardHeight = 300d;
+    private const double CenterX = StageWidth / 2d;
+    private const double CenterY = StageHeight / 2d;
+    private const double MainScale = 1.5d;
+    private const double SideScale = 0.72d;
+    private const double HorizontalGap = 100d;
+    private const double StepOffset = (CardWidth * MainScale / 2d) + HorizontalGap + (CardWidth * SideScale / 2d);
+    private const int MaxLiveDistance = 1;
 
     public string Id => "builtin.coverflow";
 
@@ -29,6 +28,7 @@ public sealed class CoverflowOverlayRenderer : IOverlayRenderer
             {
                 Title = windowTitle(session.Windows[index].Title),
                 Subtitle = string.Empty,
+                WindowHandle = session.Windows[index].Handle,
             };
 
             ApplySlotLayout(item, GetCircularOffset(index, session.SelectedIndex, session.Windows.Count), session.Windows.Count);
@@ -60,34 +60,18 @@ public sealed class CoverflowOverlayRenderer : IOverlayRenderer
 
     private static void ApplySlotLayout(OverlayRenderItem item, int circularOffset, int totalCount)
     {
-        item.IsSelected = circularOffset == 0;
-
-        if (circularOffset == 0)
-        {
-            item.X = CenterX;
-            item.Y = CenterY;
-            item.Width = SelectedWidth;
-            item.Height = SelectedHeight;
-            item.Scale = 1d;
-            item.Rotation = 0d;
-            item.Opacity = 0.16d;
-            item.ZIndex = totalCount + 10;
-            return;
-        }
-
+        var distance = Math.Abs(circularOffset);
         var sign = Math.Sign(circularOffset);
-        var distance = Math.Min(Math.Abs(circularOffset), 4);
-        var angle = Math.Min(MaxAngle, distance * StepAngle);
-        var normalizedDepth = 1d - Math.Cos(angle);
-        var scale = Math.Max(0.54d, 0.96d - (distance * 0.12d));
 
-        item.Width = SideWidth;
-        item.Height = SideHeight;
-        item.X = CenterX + (Math.Sin(angle) * RadiusX * sign) + (sign * 48d);
-        item.Y = CenterY + 34d + (normalizedDepth * RadiusY);
-        item.Scale = scale;
-        item.Rotation = -sign * Math.Min(60d, 20d + (distance * 10d));
-        item.Opacity = Math.Max(0.18d, 0.88d - (distance * 0.16d));
+        item.IsSelected = circularOffset == 0;
+        item.Width = CardWidth;
+        item.Height = CardHeight;
+        item.X = CenterX + (sign * StepOffset * distance) - (CardWidth / 2d);
+        item.Y = CenterY - (CardHeight / 2d);
+        item.Scale = distance == 0 ? MainScale : SideScale;
+        item.Rotation = 0d;
+        item.Opacity = distance <= MaxLiveDistance ? 1d : 0d;
+        item.HasLiveThumbnail = distance <= MaxLiveDistance;
         item.ZIndex = totalCount - distance;
     }
 

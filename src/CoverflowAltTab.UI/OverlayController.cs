@@ -81,9 +81,14 @@ public sealed class OverlayController : IDisposable
         _window.Close();
     }
 
-    public bool TryGetPreviewBounds(out WindowBounds bounds)
+    public bool TryGetPreviewBounds(nint windowHandle, out WindowBounds bounds)
     {
-        return _window.TryGetPreviewBounds(out bounds);
+        return _window.TryGetPreviewBounds(windowHandle, out bounds);
+    }
+
+    public IReadOnlyList<nint> GetLiveThumbnailWindowHandles()
+    {
+        return _window.GetLiveThumbnailWindowHandles();
     }
 
     public nint WindowHandle => _window.WindowHandle;

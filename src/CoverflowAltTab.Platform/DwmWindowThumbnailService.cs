@@ -4,74 +4,92 @@ namespace CoverflowAltTab.Platform;
 
 public sealed class DwmWindowThumbnailService : IWindowThumbnailService
 {
-    private nint _thumbnailHandle;
+    private readonly Dictionary<nint, ThumbnailEntry> _entries = new();
     private nint _destinationWindowHandle;
-    private nint _sourceWindowHandle;
-    private Win32.SIZE _sourceSize;
 
-    public bool TryShowThumbnail(nint destinationWindowHandle, nint sourceWindowHandle, WindowBounds destinationBounds)
+    public bool TryShowThumbnail(nint destinationWindowHandle, nint sourceWindowHandle, WindowBounds destinationBounds, double opacity = 1d)
     {
         if (destinationWindowHandle == 0 || sourceWindowHandle == 0)
         {
             return false;
         }
 
-        if (_thumbnailHandle != 0 &&
-            _destinationWindowHandle == destinationWindowHandle &&
-            _sourceWindowHandle == sourceWindowHandle)
+        if (_destinationWindowHandle != 0 && _destinationWindowHandle != destinationWindowHandle)
         {
-            return TryUpdateBounds(destinationBounds);
-        }
-
-        Clear();
-
-        if (Win32.DwmRegisterThumbnail(destinationWindowHandle, sourceWindowHandle, out _thumbnailHandle) != 0 || _thumbnailHandle == 0)
-        {
-            _thumbnailHandle = 0;
-            return false;
+            Clear();
         }
 
         _destinationWindowHandle = destinationWindowHandle;
-        _sourceWindowHandle = sourceWindowHandle;
-        _sourceSize = default;
 
-        if (Win32.DwmQueryThumbnailSourceSize(_thumbnailHandle, out var sourceSize) == 0)
+        var isNewEntry = false;
+        if (!_entries.TryGetValue(sourceWindowHandle, out var entry))
         {
-            _sourceSize = sourceSize;
+            if (Win32.DwmRegisterThumbnail(destinationWindowHandle, sourceWindowHandle, out var thumbnailHandle) != 0 || thumbnailHandle == 0)
+            {
+                return false;
+            }
+
+            entry = new ThumbnailEntry(thumbnailHandle);
+            _entries[sourceWindowHandle] = entry;
+            isNewEntry = true;
         }
 
-        return TryUpdateBounds(destinationBounds);
-    }
-
-    public bool TryUpdateBounds(WindowBounds destinationBounds)
-    {
-        if (_thumbnailHandle == 0)
+        if (!UpdateEntry(entry, destinationBounds, opacity))
         {
             return false;
         }
 
-        var properties = new Win32.DWM_THUMBNAIL_PROPERTIES
+        if (isNewEntry && Win32.DwmQueryThumbnailSourceSize(entry.ThumbnailHandle, out var sourceSize) == 0)
         {
-            dwFlags = Win32.DWM_TNP_VISIBLE | Win32.DWM_TNP_RECTDESTINATION | Win32.DWM_TNP_OPACITY,
-            opacity = 255,
-            fVisible = true,
-            rcDestination = CalculateDestinationRect(destinationBounds),
-        };
+            entry.SourceSize = sourceSize;
+            return UpdateEntry(entry, destinationBounds, opacity);
+        }
 
-        return Win32.DwmUpdateThumbnailProperties(_thumbnailHandle, ref properties) == 0;
+        return true;
+    }
+
+    public bool BringToFront(nint sourceWindowHandle, WindowBounds destinationBounds, double opacity = 1d)
+    {
+        if (_destinationWindowHandle == 0 || sourceWindowHandle == 0)
+        {
+            return false;
+        }
+
+        HideThumbnail(sourceWindowHandle);
+        return TryShowThumbnail(_destinationWindowHandle, sourceWindowHandle, destinationBounds, opacity);
+    }
+
+    public void HideThumbnail(nint sourceWindowHandle)
+    {
+        if (_entries.Remove(sourceWindowHandle, out var entry))
+        {
+            Win32.DwmUnregisterThumbnail(entry.ThumbnailHandle);
+        }
+    }
+
+    public void RetainOnly(IReadOnlyCollection<nint> sourceWindowHandles)
+    {
+        if (_entries.Count == 0)
+        {
+            return;
+        }
+
+        var staleHandles = _entries.Keys.Where(handle => !sourceWindowHandles.Contains(handle)).ToList();
+        foreach (var handle in staleHandles)
+        {
+            HideThumbnail(handle);
+        }
     }
 
     public void Clear()
     {
-        if (_thumbnailHandle != 0)
+        foreach (var entry in _entries.Values)
         {
-            Win32.DwmUnregisterThumbnail(_thumbnailHandle);
-            _thumbnailHandle = 0;
+            Win32.DwmUnregisterThumbnail(entry.ThumbnailHandle);
         }
 
+        _entries.Clear();
         _destinationWindowHandle = 0;
-        _sourceWindowHandle = 0;
-        _sourceSize = default;
     }
 
     public void Dispose()
@@ -79,9 +97,23 @@ public sealed class DwmWindowThumbnailService : IWindowThumbnailService
         Clear();
     }
 
-    private Win32.RECT CalculateDestinationRect(WindowBounds destinationBounds)
+    private static bool UpdateEntry(ThumbnailEntry entry, WindowBounds destinationBounds, double opacity)
     {
-        if (_sourceSize.cx <= 0 || _sourceSize.cy <= 0)
+        var properties = new Win32.DWM_THUMBNAIL_PROPERTIES
+        {
+            dwFlags = Win32.DWM_TNP_VISIBLE | Win32.DWM_TNP_RECTDESTINATION | Win32.DWM_TNP_OPACITY | Win32.DWM_TNP_SOURCECLIENTAREAONLY,
+            opacity = (byte)Math.Clamp(opacity * 255d, 0d, 255d),
+            fVisible = true,
+            fSourceClientAreaOnly = true,
+            rcDestination = CalculateDestinationRect(entry.SourceSize, destinationBounds),
+        };
+
+        return Win32.DwmUpdateThumbnailProperties(entry.ThumbnailHandle, ref properties) == 0;
+    }
+
+    private static Win32.RECT CalculateDestinationRect(Win32.SIZE sourceSize, WindowBounds destinationBounds)
+    {
+        if (sourceSize.cx <= 0 || sourceSize.cy <= 0)
         {
             return new Win32.RECT
             {
@@ -95,11 +127,11 @@ public sealed class DwmWindowThumbnailService : IWindowThumbnailService
         var targetWidth = Math.Max(1, destinationBounds.Right - destinationBounds.Left);
         var targetHeight = Math.Max(1, destinationBounds.Bottom - destinationBounds.Top);
         var scale = Math.Min(
-            targetWidth / (double)_sourceSize.cx,
-            targetHeight / (double)_sourceSize.cy);
+            targetWidth / (double)sourceSize.cx,
+            targetHeight / (double)sourceSize.cy);
 
-        var scaledWidth = Math.Max(1, (int)Math.Round(_sourceSize.cx * scale));
-        var scaledHeight = Math.Max(1, (int)Math.Round(_sourceSize.cy * scale));
+        var scaledWidth = Math.Max(1, (int)Math.Round(sourceSize.cx * scale));
+        var scaledHeight = Math.Max(1, (int)Math.Round(sourceSize.cy * scale));
         var offsetX = destinationBounds.Left + ((targetWidth - scaledWidth) / 2);
         var offsetY = destinationBounds.Top + ((targetHeight - scaledHeight) / 2);
 
@@ -110,5 +142,12 @@ public sealed class DwmWindowThumbnailService : IWindowThumbnailService
             Right = offsetX + scaledWidth,
             Bottom = offsetY + scaledHeight,
         };
+    }
+
+    private sealed class ThumbnailEntry(nint thumbnailHandle)
+    {
+        public nint ThumbnailHandle { get; } = thumbnailHandle;
+
+        public Win32.SIZE SourceSize { get; set; }
     }
 }

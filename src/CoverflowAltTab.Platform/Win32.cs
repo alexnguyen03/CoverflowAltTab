@@ -25,6 +25,7 @@ internal static class Win32
     internal const uint DWM_TNP_RECTDESTINATION = 0x00000001;
     internal const uint DWM_TNP_VISIBLE = 0x00000008;
     internal const uint DWM_TNP_OPACITY = 0x00000004;
+    internal const uint DWM_TNP_SOURCECLIENTAREAONLY = 0x00000010;
     internal const int SW_RESTORE = 9;
     internal const int SW_SHOW = 5;
 

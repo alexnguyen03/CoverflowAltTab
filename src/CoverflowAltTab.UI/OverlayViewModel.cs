@@ -13,12 +13,7 @@ public sealed class OverlayViewModel : INotifyPropertyChanged
     private bool _usesFreeformLayout;
     private double _stageWidth;
     private double _stageHeight;
-    private string _selectedBadgeTitle = string.Empty;
-    private double _selectedPreviewX;
-    private double _selectedPreviewY;
-    private double _selectedPreviewWidth;
-    private double _selectedPreviewHeight;
-    private double _selectedPreviewOpacity = 1d;
+    private string _selectedTitle = string.Empty;
 
     public ObservableCollection<WindowListItemViewModel> Windows { get; } = [];
 
@@ -115,92 +110,17 @@ public sealed class OverlayViewModel : INotifyPropertyChanged
         }
     }
 
-    public string SelectedBadgeTitle
+    public string SelectedTitle
     {
-        get => _selectedBadgeTitle;
+        get => _selectedTitle;
         set
         {
-            if (_selectedBadgeTitle == value)
+            if (_selectedTitle == value)
             {
                 return;
             }
 
-            _selectedBadgeTitle = value;
-            OnPropertyChanged();
-        }
-    }
-
-    public double SelectedPreviewX
-    {
-        get => _selectedPreviewX;
-        set
-        {
-            if (Math.Abs(_selectedPreviewX - value) < 0.01d)
-            {
-                return;
-            }
-
-            _selectedPreviewX = value;
-            OnPropertyChanged();
-        }
-    }
-
-    public double SelectedPreviewY
-    {
-        get => _selectedPreviewY;
-        set
-        {
-            if (Math.Abs(_selectedPreviewY - value) < 0.01d)
-            {
-                return;
-            }
-
-            _selectedPreviewY = value;
-            OnPropertyChanged();
-        }
-    }
-
-    public double SelectedPreviewWidth
-    {
-        get => _selectedPreviewWidth;
-        set
-        {
-            if (Math.Abs(_selectedPreviewWidth - value) < 0.01d)
-            {
-                return;
-            }
-
-            _selectedPreviewWidth = value;
-            OnPropertyChanged();
-        }
-    }
-
-    public double SelectedPreviewHeight
-    {
-        get => _selectedPreviewHeight;
-        set
-        {
-            if (Math.Abs(_selectedPreviewHeight - value) < 0.01d)
-            {
-                return;
-            }
-
-            _selectedPreviewHeight = value;
-            OnPropertyChanged();
-        }
-    }
-
-    public double SelectedPreviewOpacity
-    {
-        get => _selectedPreviewOpacity;
-        set
-        {
-            if (Math.Abs(_selectedPreviewOpacity - value) < 0.01d)
-            {
-                return;
-            }
-
-            _selectedPreviewOpacity = value;
+            _selectedTitle = value;
             OnPropertyChanged();
         }
     }
@@ -214,7 +134,9 @@ public sealed class OverlayViewModel : INotifyPropertyChanged
             {
                 Title = item.Title,
                 Subtitle = item.Subtitle,
+                WindowHandle = item.WindowHandle,
                 IsSelected = item.IsSelected,
+                HasLiveThumbnail = item.HasLiveThumbnail,
                 X = item.X,
                 Y = item.Y,
                 Width = item.Width,
@@ -232,7 +154,7 @@ public sealed class OverlayViewModel : INotifyPropertyChanged
         UsesFreeformLayout = model.UsesFreeformLayout;
         StageWidth = model.StageWidth;
         StageHeight = model.StageHeight;
-        UpdateSelectedPreview(model);
+        SelectedTitle = GetSelectedTitle(model);
     }
 
     public void UpdateSelection(OverlayRenderModel model)
@@ -242,6 +164,7 @@ public sealed class OverlayViewModel : INotifyPropertyChanged
             var source = model.Items[index];
             var target = Windows[index];
             target.IsSelected = source.IsSelected;
+            target.HasLiveThumbnail = source.HasLiveThumbnail;
             target.X = source.X;
             target.Y = source.Y;
             target.Width = source.Width;
@@ -255,7 +178,7 @@ public sealed class OverlayViewModel : INotifyPropertyChanged
         UsesFreeformLayout = model.UsesFreeformLayout;
         StageWidth = model.StageWidth;
         StageHeight = model.StageHeight;
-        UpdateSelectedPreview(model);
+        SelectedTitle = GetSelectedTitle(model);
     }
 
     public void Clear()
@@ -267,12 +190,7 @@ public sealed class OverlayViewModel : INotifyPropertyChanged
         UsesFreeformLayout = false;
         StageWidth = 0d;
         StageHeight = 0d;
-        SelectedBadgeTitle = string.Empty;
-        SelectedPreviewX = 0d;
-        SelectedPreviewY = 0d;
-        SelectedPreviewWidth = 0d;
-        SelectedPreviewHeight = 0d;
-        SelectedPreviewOpacity = 1d;
+        SelectedTitle = string.Empty;
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -282,25 +200,10 @@ public sealed class OverlayViewModel : INotifyPropertyChanged
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
-    private void UpdateSelectedPreview(OverlayRenderModel model)
+    private static string GetSelectedTitle(OverlayRenderModel model)
     {
-        if (model.SelectedIndex < 0 || model.SelectedIndex >= model.Items.Count)
-        {
-            SelectedBadgeTitle = string.Empty;
-            SelectedPreviewX = 0d;
-            SelectedPreviewY = 0d;
-            SelectedPreviewWidth = 0d;
-            SelectedPreviewHeight = 0d;
-            SelectedPreviewOpacity = 1d;
-            return;
-        }
-
-        var selectedItem = model.Items[model.SelectedIndex];
-        SelectedBadgeTitle = selectedItem.Title;
-        SelectedPreviewX = selectedItem.X;
-        SelectedPreviewY = selectedItem.Y;
-        SelectedPreviewWidth = selectedItem.Width;
-        SelectedPreviewHeight = selectedItem.Height;
-        SelectedPreviewOpacity = selectedItem.Opacity;
+        return model.SelectedIndex >= 0 && model.SelectedIndex < model.Items.Count
+            ? model.Items[model.SelectedIndex].Title
+            : string.Empty;
     }
 }
