@@ -9,6 +9,7 @@ using CoverflowAltTab.Host.Debug;
 using CoverflowAltTab.Platform;
 using CoverflowAltTab.UI;
 using System.Windows;
+using System.Windows.Media;
 
 namespace CoverflowAltTab.Host;
 
@@ -33,6 +34,7 @@ public sealed class SwitcherApplication : IDisposable
     private DateTimeOffset _lastOverlayShownAt = DateTimeOffset.MinValue;
     private bool _isOverlayClosing;
     private nint _pendingPromoteHandle;
+    private bool _isRenderSyncActive;
 
     public SwitcherApplication(
         SessionController sessionController,
@@ -84,6 +86,7 @@ public sealed class SwitcherApplication : IDisposable
         _overlayController.PreviewBoundsChanged -= OnPreviewBoundsChanged;
         _hotkeyService.Stop();
         _keyboardMonitorService.Stop();
+        StopRenderSync();
         _windowThumbnailService.Dispose();
         _overlayController.Dispose();
     }
@@ -122,11 +125,13 @@ public sealed class SwitcherApplication : IDisposable
         _debugWindowController.SetLastAction($"Overlay shown: {result.Session.SessionId}");
         _lastOverlayShownAt = DateTimeOffset.UtcNow;
         _isOverlayClosing = false;
+        _pendingPromoteHandle = result.Session.SelectedWindow.Handle;
         Application.Current.Dispatcher.BeginInvoke(() =>
         {
             try
             {
                 _overlayController.ShowSession(result.Session);
+                StartRenderSync();
             }
             catch (Exception ex)
             {
@@ -136,6 +141,33 @@ public sealed class SwitcherApplication : IDisposable
                 _sessionController.CancelCurrentSession();
             }
         });
+    }
+
+    private void StartRenderSync()
+    {
+        if (_isRenderSyncActive)
+        {
+            return;
+        }
+
+        _isRenderSyncActive = true;
+        CompositionTarget.Rendering += OnRendering;
+    }
+
+    private void StopRenderSync()
+    {
+        if (!_isRenderSyncActive)
+        {
+            return;
+        }
+
+        _isRenderSyncActive = false;
+        CompositionTarget.Rendering -= OnRendering;
+    }
+
+    private void OnRendering(object? sender, EventArgs e)
+    {
+        RefreshThumbnails();
     }
 
     private void OnKeyEventReceived(object? sender, KeyEventRecord e)
@@ -150,19 +182,17 @@ public sealed class SwitcherApplication : IDisposable
             case OverlayCommand.Next:
                 if (_sessionController.MoveNext() && _sessionController.CurrentSession is not null)
                 {
-                    Application.Current.Dispatcher.BeginInvoke(() => _overlayController.UpdateSession(_sessionController.CurrentSession));
+                    _overlayController.UpdateSession(_sessionController.CurrentSession);
                 _debugWindowController.SetLastAction($"Selection moved: {_sessionController.CurrentSession.SelectedIndex}");
                 _pendingPromoteHandle = _sessionController.CurrentSession.SelectedWindow.Handle;
-                RefreshThumbnails();
                 }
                 break;
             case OverlayCommand.Previous:
                 if (_sessionController.MovePrevious() && _sessionController.CurrentSession is not null)
                 {
-                    Application.Current.Dispatcher.BeginInvoke(() => _overlayController.UpdateSession(_sessionController.CurrentSession));
+                    _overlayController.UpdateSession(_sessionController.CurrentSession);
                     _debugWindowController.SetLastAction($"Selection moved: {_sessionController.CurrentSession.SelectedIndex}");
                     _pendingPromoteHandle = _sessionController.CurrentSession.SelectedWindow.Handle;
-                    RefreshThumbnails();
                 }
                 break;
             case OverlayCommand.Commit:
@@ -213,6 +243,7 @@ public sealed class SwitcherApplication : IDisposable
     {
         var result = _sessionController.CommitCurrentSession();
         _isOverlayClosing = true;
+        StopRenderSync();
         _windowThumbnailService.Clear();
         Application.Current.Dispatcher.BeginInvoke(() => _overlayController.HideOverlay());
 
@@ -236,6 +267,7 @@ public sealed class SwitcherApplication : IDisposable
         if (_sessionController.CancelCurrentSession())
         {
             _isOverlayClosing = true;
+            StopRenderSync();
             _windowThumbnailService.Clear();
             Application.Current.Dispatcher.BeginInvoke(() => _overlayController.HideOverlay());
             if (originalForegroundWindowHandle != 0)
@@ -305,20 +337,16 @@ public sealed class SwitcherApplication : IDisposable
             return;
         }
 
-        var liveHandles = _overlayController.GetLiveThumbnailWindowHandles();
+        var liveHandles = _overlayController.GetSessionWindowHandles();
         _windowThumbnailService.RetainOnly(liveHandles);
 
         var selectedHandle = session.SelectedWindow.Handle;
 
-        if (_pendingPromoteHandle != 0 && liveHandles.Contains(_pendingPromoteHandle))
-        {
-            if (_overlayController.TryGetPreviewBounds(_pendingPromoteHandle, out var promoteBounds))
-            {
-                _windowThumbnailService.BringToFront(_pendingPromoteHandle, promoteBounds, 1d);
-                _pendingPromoteHandle = 0;
-            }
-        }
-
+        // Register/update every visible thumbnail first. DWM stacks thumbnails in
+        // registration order (most recently registered on top), so the "bring the
+        // selected card to front" promotion below must run after this loop -
+        // otherwise a thumbnail registered later in this same loop (e.g. the right
+        // card) would end up rendered above the just-promoted center card.
         var shownCount = 0;
         foreach (var handle in liveHandles)
         {
@@ -327,6 +355,15 @@ public sealed class SwitcherApplication : IDisposable
                 _windowThumbnailService.TryShowThumbnail(_overlayController.WindowHandle, handle, bounds, opacity))
             {
                 shownCount++;
+            }
+        }
+
+        if (_pendingPromoteHandle != 0 && liveHandles.Contains(_pendingPromoteHandle))
+        {
+            if (_overlayController.TryGetPreviewBounds(_pendingPromoteHandle, out var promoteBounds))
+            {
+                _windowThumbnailService.BringToFront(_pendingPromoteHandle, promoteBounds, 1d);
+                _pendingPromoteHandle = 0;
             }
         }
 

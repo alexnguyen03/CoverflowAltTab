@@ -7,7 +7,7 @@ namespace CoverflowAltTab.UI.Motion;
 
 public static class MotionAnimator
 {
-    private static readonly Duration AnimationDuration = new(TimeSpan.FromMilliseconds(220));
+    private static readonly Duration AnimationDuration = new(TimeSpan.FromMilliseconds(380));
 
     public static readonly DependencyProperty AnimatedLeftProperty =
         DependencyProperty.RegisterAttached(
@@ -190,7 +190,7 @@ public static class MotionAnimator
             Duration = AnimationDuration,
             EasingFunction = new CubicEase
             {
-                EasingMode = EasingMode.EaseOut,
+                EasingMode = EasingMode.EaseInOut,
             },
         };
 

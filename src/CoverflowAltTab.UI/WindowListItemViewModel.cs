@@ -6,7 +6,6 @@ namespace CoverflowAltTab.UI;
 public sealed class WindowListItemViewModel : INotifyPropertyChanged
 {
     private bool _isSelected;
-    private bool _hasLiveThumbnail;
     private double _x;
     private double _y;
     private double _width;
@@ -33,21 +32,6 @@ public sealed class WindowListItemViewModel : INotifyPropertyChanged
             }
 
             _isSelected = value;
-            OnPropertyChanged();
-        }
-    }
-
-    public bool HasLiveThumbnail
-    {
-        get => _hasLiveThumbnail;
-        set
-        {
-            if (_hasLiveThumbnail == value)
-            {
-                return;
-            }
-
-            _hasLiveThumbnail = value;
             OnPropertyChanged();
         }
     }

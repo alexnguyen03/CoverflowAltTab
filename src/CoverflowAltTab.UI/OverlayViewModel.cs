@@ -136,7 +136,6 @@ public sealed class OverlayViewModel : INotifyPropertyChanged
                 Subtitle = item.Subtitle,
                 WindowHandle = item.WindowHandle,
                 IsSelected = item.IsSelected,
-                HasLiveThumbnail = item.HasLiveThumbnail,
                 X = item.X,
                 Y = item.Y,
                 Width = item.Width,
@@ -164,7 +163,6 @@ public sealed class OverlayViewModel : INotifyPropertyChanged
             var source = model.Items[index];
             var target = Windows[index];
             target.IsSelected = source.IsSelected;
-            target.HasLiveThumbnail = source.HasLiveThumbnail;
             target.X = source.X;
             target.Y = source.Y;
             target.Width = source.Width;

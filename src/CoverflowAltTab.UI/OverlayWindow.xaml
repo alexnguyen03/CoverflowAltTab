@@ -1,7 +1,6 @@
 <Window x:Class="CoverflowAltTab.UI.OverlayWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:motion="clr-namespace:CoverflowAltTab.UI.Motion"
         Title="CoverflowAltTab Overlay"
         SizeToContent="WidthAndHeight"
         WindowStyle="None"
@@ -62,39 +61,52 @@
                     </Rectangle.Fill>
                 </Rectangle>
 
-                <ItemsControl x:Name="CardsItemsControl"
-                              ItemsSource="{Binding Windows}"
-                              Width="{Binding StageWidth}"
-                              Height="{Binding StageHeight}"
-                              IsHitTestVisible="False">
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <Canvas/>
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                    <ItemsControl.ItemContainerStyle>
-                        <Style TargetType="ContentPresenter">
-                            <Setter Property="motion:MotionAnimator.AnimatedLeft"
-                                    Value="{Binding X}"/>
-                            <Setter Property="motion:MotionAnimator.AnimatedTop"
-                                    Value="{Binding Y}"/>
-                            <Setter Property="Panel.ZIndex"
-                                    Value="{Binding ZIndex}"/>
-                        </Style>
-                    </ItemsControl.ItemContainerStyle>
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <Border x:Name="PreviewSurface"
-                                    Width="{Binding Width}"
-                                    Height="{Binding Height}"
-                                    ClipToBounds="True"
-                                    RenderTransformOrigin="0.5,0.5"
-                                    motion:MotionAnimator.AnimatedScale="{Binding Scale}"
-                                    motion:MotionAnimator.AnimatedSkewY="{Binding Rotation}"
-                                    motion:MotionAnimator.AnimatedOpacity="{Binding Opacity}"/>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
+                <!-- Fixed 3-slot coverflow (left/center/right), positioned and animated
+                     directly in OverlayWindow.xaml.cs via TranslateTransform + ScaleTransform,
+                     the same technique as the CarouselDemo prototype. -->
+                <Canvas HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Width="1"
+                        Height="1"
+                        IsHitTestVisible="False">
+
+                    <Grid x:Name="LeftCard"
+                          Width="460" Height="300"
+                          Canvas.Left="-230" Canvas.Top="-150"
+                          RenderTransformOrigin="0.5,0.5">
+                        <Grid.RenderTransform>
+                            <TransformGroup>
+                                <TranslateTransform x:Name="LeftCardTranslate"/>
+                                <ScaleTransform x:Name="LeftCardScale"/>
+                            </TransformGroup>
+                        </Grid.RenderTransform>
+                    </Grid>
+
+                    <Grid x:Name="CenterCard"
+                          Width="460" Height="300"
+                          Canvas.Left="-230" Canvas.Top="-150"
+                          RenderTransformOrigin="0.5,0.5">
+                        <Grid.RenderTransform>
+                            <TransformGroup>
+                                <TranslateTransform x:Name="CenterCardTranslate"/>
+                                <ScaleTransform x:Name="CenterCardScale"/>
+                            </TransformGroup>
+                        </Grid.RenderTransform>
+                    </Grid>
+
+                    <Grid x:Name="RightCard"
+                          Width="460" Height="300"
+                          Canvas.Left="-230" Canvas.Top="-150"
+                          RenderTransformOrigin="0.5,0.5">
+                        <Grid.RenderTransform>
+                            <TransformGroup>
+                                <TranslateTransform x:Name="RightCardTranslate"/>
+                                <ScaleTransform x:Name="RightCardScale"/>
+                            </TransformGroup>
+                        </Grid.RenderTransform>
+                    </Grid>
+
+                </Canvas>
 
                 <Border HorizontalAlignment="Center"
                         VerticalAlignment="Bottom"

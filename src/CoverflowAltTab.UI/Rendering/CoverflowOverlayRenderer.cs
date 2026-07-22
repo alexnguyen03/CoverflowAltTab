@@ -14,7 +14,6 @@ public sealed class CoverflowOverlayRenderer : IOverlayRenderer
     private const double SideScale = 0.72d;
     private const double HorizontalGap = 100d;
     private const double StepOffset = (CardWidth * MainScale / 2d) + HorizontalGap + (CardWidth * SideScale / 2d);
-    private const int MaxLiveDistance = 1;
 
     public string Id => "builtin.coverflow";
 
@@ -70,8 +69,7 @@ public sealed class CoverflowOverlayRenderer : IOverlayRenderer
         item.Y = CenterY - (CardHeight / 2d);
         item.Scale = distance == 0 ? MainScale : SideScale;
         item.Rotation = 0d;
-        item.Opacity = distance <= MaxLiveDistance ? 1d : 0d;
-        item.HasLiveThumbnail = distance <= MaxLiveDistance;
+        item.Opacity = 1d;
         item.ZIndex = totalCount - distance;
     }
 

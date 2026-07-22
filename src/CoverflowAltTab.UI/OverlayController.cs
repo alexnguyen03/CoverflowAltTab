@@ -33,6 +33,7 @@ public sealed class OverlayController : IDisposable
     {
         _currentModel = _renderer.BuildModel(session);
         _viewModel.ShowModel(_currentModel);
+        _window.ShowCoverflow(_currentModel);
 
         if (!_window.IsVisible)
         {
@@ -52,11 +53,13 @@ public sealed class OverlayController : IDisposable
         {
             _currentModel = _renderer.BuildModel(session);
             _viewModel.ShowModel(_currentModel);
+            _window.ShowCoverflow(_currentModel);
         }
         else
         {
             _renderer.UpdateSelection(_currentModel, session.SelectedIndex);
             _viewModel.UpdateSelection(_currentModel);
+            _window.UpdateCoverflow(_currentModel);
         }
 
         _window.Dispatcher.BeginInvoke(() =>
@@ -86,9 +89,9 @@ public sealed class OverlayController : IDisposable
         return _window.TryGetPreviewBounds(windowHandle, out bounds);
     }
 
-    public IReadOnlyList<nint> GetLiveThumbnailWindowHandles()
+    public IReadOnlyList<nint> GetSessionWindowHandles()
     {
-        return _window.GetLiveThumbnailWindowHandles();
+        return _window.GetSessionWindowHandles();
     }
 
     public nint WindowHandle => _window.WindowHandle;
