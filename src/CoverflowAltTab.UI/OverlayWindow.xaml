@@ -1,6 +1,7 @@
 <Window x:Class="CoverflowAltTab.UI.OverlayWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:motion="clr-namespace:CoverflowAltTab.UI.Motion"
         Title="CoverflowAltTab Overlay"
         SizeToContent="WidthAndHeight"
         WindowStyle="None"
@@ -30,14 +31,14 @@
         </Style>
     </Window.Resources>
     <Border MinWidth="420"
-            Background="#E61A1A1A"
-            BorderBrush="#FF444444"
+            Background="#EA141414"
+            BorderBrush="#FF343434"
             BorderThickness="1"
-            CornerRadius="14"
-            Padding="16">
+            CornerRadius="20"
+            Padding="18">
         <StackPanel>
             <TextBlock Text="{Binding HeaderTitle}"
-                       FontSize="16"
+                       FontSize="17"
                        FontWeight="SemiBold"
                        Foreground="White" />
             <TextBlock Text="{Binding HeaderSubtitle}"
@@ -45,99 +46,156 @@
                        Foreground="#FFC9C9C9"
                        FontSize="11" />
             <Border x:Name="PreviewHost"
-                    Height="180"
-                    Margin="0,0,0,12"
-                    Background="#18000000"
-                    BorderBrush="#225C5C5C"
+                    Height="210"
+                    Margin="0,0,0,14"
+                    Background="#10000000"
+                    BorderBrush="#223A3A3A"
                     BorderThickness="1"
-                    CornerRadius="10"
-                    SnapsToDevicePixels="True">
+                    CornerRadius="16"
+                    SnapsToDevicePixels="True"
+                    ClipToBounds="True">
                 <Grid>
+                    <Rectangle RadiusX="16"
+                               RadiusY="16">
+                        <Rectangle.Fill>
+                            <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
+                                <GradientStop Color="#06000000" Offset="0" />
+                                <GradientStop Color="#00000000" Offset="0.25" />
+                                <GradientStop Color="#66000000" Offset="1" />
+                            </LinearGradientBrush>
+                        </Rectangle.Fill>
+                    </Rectangle>
                     <TextBlock Text="Selected window preview"
                                Margin="12"
                                VerticalAlignment="Top"
                                Foreground="#88FFFFFF"
                                FontSize="11" />
+                    <Border VerticalAlignment="Bottom"
+                            Height="42"
+                            Background="#66000000" />
                 </Grid>
             </Border>
             <Border Width="{Binding StageWidth}"
                     Height="{Binding StageHeight}"
-                    Margin="0,0,0,12"
-                    Background="#08000000"
-                    CornerRadius="12"
+                    Margin="0,0,0,14"
+                    Background="#0AFFFFFF"
+                    BorderBrush="#142D2D2D"
+                    BorderThickness="1"
+                    CornerRadius="18"
                     SnapsToDevicePixels="True"
+                    ClipToBounds="True"
                     Style="{StaticResource CoverflowSurfaceVisibilityStyle}">
-                <ItemsControl ItemsSource="{Binding Windows}">
-                    <ItemsControl.Width>
-                        <Binding Path="StageWidth" />
-                    </ItemsControl.Width>
-                    <ItemsControl.Height>
-                        <Binding Path="StageHeight" />
-                    </ItemsControl.Height>
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <Canvas />
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                    <ItemsControl.ItemContainerStyle>
-                        <Style TargetType="ContentPresenter">
-                            <Setter Property="Canvas.Left" Value="{Binding X}" />
-                            <Setter Property="Canvas.Top" Value="{Binding Y}" />
-                            <Setter Property="Panel.ZIndex" Value="{Binding ZIndex}" />
-                        </Style>
-                    </ItemsControl.ItemContainerStyle>
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <Border Width="{Binding Width}"
-                                    Height="{Binding Height}"
-                                    Padding="14"
-                                    CornerRadius="14"
-                                    Opacity="{Binding Opacity}"
-                                    RenderTransformOrigin="0.5,0.5">
-                                <Border.RenderTransform>
-                                    <TransformGroup>
-                                        <ScaleTransform ScaleX="{Binding Scale}"
-                                                        ScaleY="{Binding Scale}" />
-                                        <SkewTransform AngleY="{Binding Rotation}" />
-                                    </TransformGroup>
-                                </Border.RenderTransform>
-                                <Border.Style>
-                                    <Style TargetType="Border">
-                                        <Setter Property="Background" Value="#FF3D3D3D" />
-                                        <Setter Property="BorderBrush" Value="#225A5A5A" />
-                                        <Setter Property="BorderThickness" Value="1" />
-                                        <Setter Property="Effect">
-                                            <Setter.Value>
-                                                <DropShadowEffect BlurRadius="20"
-                                                                  Color="#99000000"
-                                                                  Direction="270"
-                                                                  ShadowDepth="8"
-                                                                  Opacity="0.45" />
-                                            </Setter.Value>
-                                        </Setter>
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding IsSelected}" Value="True">
-                                                <Setter Property="Background" Value="#FF0E639C" />
-                                                <Setter Property="BorderBrush" Value="#55C6E4FF" />
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </Border.Style>
-                                <StackPanel VerticalAlignment="Center">
-                                    <TextBlock Text="{Binding Title}"
-                                               Foreground="White"
-                                               FontSize="16"
-                                               FontWeight="SemiBold"
-                                               TextTrimming="CharacterEllipsis" />
-                                    <TextBlock Text="{Binding Subtitle}"
-                                               Margin="0,8,0,0"
-                                               Foreground="#FFDADADA"
-                                               FontSize="12" />
-                                </StackPanel>
-                            </Border>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
+                <Grid>
+                    <Border HorizontalAlignment="Center"
+                            VerticalAlignment="Top"
+                            Width="240"
+                            Height="120"
+                            Margin="0,-40,0,0"
+                            CornerRadius="120"
+                            Opacity="0.16">
+                        <Border.Background>
+                            <RadialGradientBrush GradientOrigin="0.5,0.5">
+                                <GradientStop Color="#FF50A7FF" Offset="0" />
+                                <GradientStop Color="#0050A7FF" Offset="1" />
+                            </RadialGradientBrush>
+                        </Border.Background>
+                    </Border>
+                    <Rectangle HorizontalAlignment="Center"
+                               VerticalAlignment="Bottom"
+                               Width="700"
+                               Height="72"
+                               Margin="0,0,0,6"
+                               Opacity="0.18">
+                        <Rectangle.Fill>
+                            <RadialGradientBrush GradientOrigin="0.5,0.4">
+                                <GradientStop Color="#FFFFFFFF" Offset="0" />
+                                <GradientStop Color="#00FFFFFF" Offset="1" />
+                            </RadialGradientBrush>
+                        </Rectangle.Fill>
+                    </Rectangle>
+                    <ItemsControl ItemsSource="{Binding Windows}"
+                                  Width="{Binding StageWidth}"
+                                  Height="{Binding StageHeight}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <Canvas />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemContainerStyle>
+                            <Style TargetType="ContentPresenter">
+                                <Setter Property="motion:MotionAnimator.AnimatedLeft" Value="{Binding X}" />
+                                <Setter Property="motion:MotionAnimator.AnimatedTop" Value="{Binding Y}" />
+                                <Setter Property="Panel.ZIndex" Value="{Binding ZIndex}" />
+                            </Style>
+                        </ItemsControl.ItemContainerStyle>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Width="{Binding Width}"
+                                        Height="{Binding Height}"
+                                        Padding="16"
+                                        CornerRadius="16"
+                                        RenderTransformOrigin="0.5,0.5"
+                                        motion:MotionAnimator.AnimatedScale="{Binding Scale}"
+                                        motion:MotionAnimator.AnimatedSkewY="{Binding Rotation}"
+                                        motion:MotionAnimator.AnimatedOpacity="{Binding Opacity}">
+                                    <Border.Style>
+                                        <Style TargetType="Border">
+                                            <Setter Property="Background">
+                                                <Setter.Value>
+                                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                                        <GradientStop Color="#FF404040" Offset="0" />
+                                                        <GradientStop Color="#FF2C2C2C" Offset="1" />
+                                                    </LinearGradientBrush>
+                                                </Setter.Value>
+                                            </Setter>
+                                            <Setter Property="BorderBrush" Value="#223B3B3B" />
+                                            <Setter Property="BorderThickness" Value="1" />
+                                            <Setter Property="Effect">
+                                                <Setter.Value>
+                                                    <DropShadowEffect BlurRadius="28"
+                                                                      Color="#CC000000"
+                                                                      Direction="270"
+                                                                      ShadowDepth="12"
+                                                                      Opacity="0.55" />
+                                                </Setter.Value>
+                                            </Setter>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                                    <Setter Property="Background">
+                                                        <Setter.Value>
+                                                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                                                <GradientStop Color="#FF2482C8" Offset="0" />
+                                                                <GradientStop Color="#FF0D5F9A" Offset="1" />
+                                                            </LinearGradientBrush>
+                                                        </Setter.Value>
+                                                    </Setter>
+                                                    <Setter Property="BorderBrush" Value="#66C6E4FF" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+                                    <Grid>
+                                        <Border Height="34"
+                                                VerticalAlignment="Top"
+                                                CornerRadius="10"
+                                                Background="#14FFFFFF" />
+                                        <StackPanel VerticalAlignment="Bottom">
+                                            <TextBlock Text="{Binding Title}"
+                                                       Foreground="White"
+                                                       FontSize="18"
+                                                       FontWeight="SemiBold"
+                                                       TextTrimming="CharacterEllipsis" />
+                                            <TextBlock Text="{Binding Subtitle}"
+                                                       Margin="0,8,0,0"
+                                                       Foreground="#E0F0F0F0"
+                                                       FontSize="12" />
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </Grid>
             </Border>
             <ItemsControl ItemsSource="{Binding Windows}"
                           Width="388"
@@ -170,6 +228,10 @@
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
+            <TextBlock Margin="2,2,0,0"
+                       Foreground="#88FFFFFF"
+                       FontSize="11"
+                       Text="Tab / Shift+Tab to navigate  |  Enter to switch  |  Esc or click outside to close" />
         </StackPanel>
     </Border>
 </Window>

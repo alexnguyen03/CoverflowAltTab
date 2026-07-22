@@ -82,6 +82,9 @@ internal static class Win32
     [DllImport("dwmapi.dll")]
     internal static extern int DwmUpdateThumbnailProperties(nint hThumbnail, ref DWM_THUMBNAIL_PROPERTIES properties);
 
+    [DllImport("dwmapi.dll")]
+    internal static extern int DwmQueryThumbnailSourceSize(nint hThumbnail, out SIZE size);
+
     [DllImport("user32.dll")]
     internal static extern nint GetForegroundWindow();
 
@@ -132,6 +135,13 @@ internal static class Win32
         public int Top;
         public int Right;
         public int Bottom;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct SIZE
+    {
+        public int cx;
+        public int cy;
     }
 
     [StructLayout(LayoutKind.Sequential)]
