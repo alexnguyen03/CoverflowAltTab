@@ -10,6 +10,7 @@ public partial class OverlayWindow : Window
     public OverlayWindow()
     {
         InitializeComponent();
+        SelectedPreviewHost.LayoutUpdated += OnSelectedPreviewHostLayoutUpdated;
     }
 
     public event EventHandler<OverlayCommandRequestedEventArgs>? CommandRequested;
@@ -70,12 +71,12 @@ public partial class OverlayWindow : Window
     public bool TryGetPreviewBounds(out WindowBounds bounds)
     {
         bounds = default;
-        if (!IsLoaded || !IsVisible || PreviewHost.ActualWidth <= 0 || PreviewHost.ActualHeight <= 0)
+        if (!IsLoaded || !IsVisible || SelectedPreviewSurface.ActualWidth <= 0 || SelectedPreviewSurface.ActualHeight <= 0)
         {
             return false;
         }
 
-        var relative = PreviewHost.TransformToAncestor(this).Transform(new Point(0, 0));
+        var relative = SelectedPreviewSurface.TransformToAncestor(this).Transform(new Point(0, 0));
         var source = PresentationSource.FromVisual(this);
         if (source?.CompositionTarget is null)
         {
@@ -84,7 +85,7 @@ public partial class OverlayWindow : Window
 
         var transform = source.CompositionTarget.TransformToDevice;
         var topLeft = transform.Transform(relative);
-        var bottomRight = transform.Transform(new Point(relative.X + PreviewHost.ActualWidth, relative.Y + PreviewHost.ActualHeight));
+        var bottomRight = transform.Transform(new Point(relative.X + SelectedPreviewSurface.ActualWidth, relative.Y + SelectedPreviewSurface.ActualHeight));
 
         bounds = new WindowBounds(
             (int)Math.Round(topLeft.X),
@@ -92,5 +93,13 @@ public partial class OverlayWindow : Window
             (int)Math.Round(bottomRight.X),
             (int)Math.Round(bottomRight.Y));
         return true;
+    }
+
+    private void OnSelectedPreviewHostLayoutUpdated(object? sender, EventArgs e)
+    {
+        if (IsVisible)
+        {
+            PreviewBoundsChanged?.Invoke(this, EventArgs.Empty);
+        }
     }
 }

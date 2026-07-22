@@ -44,6 +44,20 @@ public static class MotionAnimator
             typeof(MotionAnimator),
             new PropertyMetadata(1d, OnAnimatedOpacityChanged));
 
+    public static readonly DependencyProperty AnimatedWidthProperty =
+        DependencyProperty.RegisterAttached(
+            "AnimatedWidth",
+            typeof(double),
+            typeof(MotionAnimator),
+            new PropertyMetadata(double.NaN, OnAnimatedWidthChanged));
+
+    public static readonly DependencyProperty AnimatedHeightProperty =
+        DependencyProperty.RegisterAttached(
+            "AnimatedHeight",
+            typeof(double),
+            typeof(MotionAnimator),
+            new PropertyMetadata(double.NaN, OnAnimatedHeightChanged));
+
     public static void SetAnimatedLeft(DependencyObject element, double value) => element.SetValue(AnimatedLeftProperty, value);
 
     public static double GetAnimatedLeft(DependencyObject element) => (double)element.GetValue(AnimatedLeftProperty);
@@ -63,6 +77,14 @@ public static class MotionAnimator
     public static void SetAnimatedOpacity(DependencyObject element, double value) => element.SetValue(AnimatedOpacityProperty, value);
 
     public static double GetAnimatedOpacity(DependencyObject element) => (double)element.GetValue(AnimatedOpacityProperty);
+
+    public static void SetAnimatedWidth(DependencyObject element, double value) => element.SetValue(AnimatedWidthProperty, value);
+
+    public static double GetAnimatedWidth(DependencyObject element) => (double)element.GetValue(AnimatedWidthProperty);
+
+    public static void SetAnimatedHeight(DependencyObject element, double value) => element.SetValue(AnimatedHeightProperty, value);
+
+    public static double GetAnimatedHeight(DependencyObject element) => (double)element.GetValue(AnimatedHeightProperty);
 
     private static void OnAnimatedLeftChanged(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs e)
     {
@@ -123,6 +145,26 @@ public static class MotionAnimator
         }
 
         AnimateDouble(element, UIElement.OpacityProperty, e.NewValue, fallbackSetter: value => element.Opacity = value);
+    }
+
+    private static void OnAnimatedWidthChanged(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs e)
+    {
+        if (dependencyObject is not FrameworkElement element)
+        {
+            return;
+        }
+
+        AnimateDouble(element, FrameworkElement.WidthProperty, e.NewValue, fallbackSetter: value => element.Width = value);
+    }
+
+    private static void OnAnimatedHeightChanged(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs e)
+    {
+        if (dependencyObject is not FrameworkElement element)
+        {
+            return;
+        }
+
+        AnimateDouble(element, FrameworkElement.HeightProperty, e.NewValue, fallbackSetter: value => element.Height = value);
     }
 
     private static void AnimateDouble(
