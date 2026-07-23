@@ -12,7 +12,9 @@ public sealed class OverlayRenderModel
 
     public int SelectedIndex { get; set; }
 
-    public bool UsesFreeformLayout { get; init; }
+    public OverlayLayoutKind LayoutKind { get; init; }
+
+    public bool UsesFreeformLayout => LayoutKind != OverlayLayoutKind.List;
 
     public double StageWidth { get; init; }
 

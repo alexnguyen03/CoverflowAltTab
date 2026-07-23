@@ -11,10 +11,16 @@ public sealed class DebugWindowViewModel : INotifyPropertyChanged
     private string _hotkeyStatus = "Ctrl + Alt + Space";
     private string _sessionStatus = "Idle";
     private string _lastAction = "None";
+    private string? _selectedRendererId;
+    private string? _selectedAnimationId;
 
     public ObservableCollection<DebugKeyEventViewModel> RecentKeys { get; } = [];
 
     public ObservableCollection<DebugExtensionViewModel> Extensions { get; } = [];
+
+    public ObservableCollection<string> AvailableRendererIds { get; } = [];
+
+    public ObservableCollection<string> AvailableAnimationIds { get; } = [];
 
     public string AppStatus
     {
@@ -38,6 +44,18 @@ public sealed class DebugWindowViewModel : INotifyPropertyChanged
     {
         get => _lastAction;
         set => SetField(ref _lastAction, value);
+    }
+
+    public string? SelectedRendererId
+    {
+        get => _selectedRendererId;
+        set => SetField(ref _selectedRendererId, value);
+    }
+
+    public string? SelectedAnimationId
+    {
+        get => _selectedAnimationId;
+        set => SetField(ref _selectedAnimationId, value);
     }
 
     public void AddKey(DebugKeyEventViewModel item)

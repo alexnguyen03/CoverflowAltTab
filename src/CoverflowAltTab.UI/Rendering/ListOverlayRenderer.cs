@@ -37,7 +37,7 @@ public sealed class ListOverlayRenderer : IOverlayRenderer
             HeaderSubtitle = $"Sort: {session.ActiveSortStrategyId}",
             Items = items,
             SelectedIndex = session.SelectedIndex,
-            UsesFreeformLayout = false,
+            LayoutKind = OverlayLayoutKind.List,
             StageWidth = 0,
             StageHeight = 0,
         };

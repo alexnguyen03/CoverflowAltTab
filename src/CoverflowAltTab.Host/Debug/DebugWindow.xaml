@@ -3,12 +3,13 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="CoverflowAltTab Debug"
         Width="760"
-        Height="560"
+        Height="640"
         MinWidth="640"
-        MinHeight="420"
+        MinHeight="480"
         WindowStartupLocation="CenterScreen">
     <Grid Margin="16">
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
@@ -62,6 +63,31 @@
 
         <Border Grid.Row="2"
                 Margin="0,0,0,14"
+                Padding="12"
+                CornerRadius="12"
+                Background="#FFF9FAFB"
+                BorderBrush="#FFE4E7EC"
+                BorderThickness="1">
+            <StackPanel Orientation="Horizontal">
+                <StackPanel Margin="0,0,24,0">
+                    <TextBlock Text="Overlay renderer" FontWeight="SemiBold" />
+                    <ComboBox Margin="0,6,0,0"
+                              Width="200"
+                              ItemsSource="{Binding AvailableRendererIds}"
+                              SelectedItem="{Binding SelectedRendererId}" />
+                </StackPanel>
+                <StackPanel>
+                    <TextBlock Text="Animation" FontWeight="SemiBold" />
+                    <ComboBox Margin="0,6,0,0"
+                              Width="200"
+                              ItemsSource="{Binding AvailableAnimationIds}"
+                              SelectedItem="{Binding SelectedAnimationId}" />
+                </StackPanel>
+            </StackPanel>
+        </Border>
+
+        <Border Grid.Row="3"
+                Margin="0,0,0,14"
                 Padding="0"
                 BorderBrush="#FFE4E7EC"
                 BorderThickness="1"
@@ -94,7 +120,7 @@
             </Grid>
         </Border>
 
-        <Border Grid.Row="3"
+        <Border Grid.Row="4"
                 Padding="0"
                 BorderBrush="#FFE4E7EC"
                 BorderThickness="1"

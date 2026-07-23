@@ -41,7 +41,7 @@ public sealed class CoverflowOverlayRenderer : IOverlayRenderer
             HeaderSubtitle = string.Empty,
             Items = items,
             SelectedIndex = session.SelectedIndex,
-            UsesFreeformLayout = true,
+            LayoutKind = OverlayLayoutKind.Coverflow,
             StageWidth = StageWidth,
             StageHeight = StageHeight,
         };

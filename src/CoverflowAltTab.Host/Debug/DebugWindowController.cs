@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.Windows.Threading;
 using CoverflowAltTab.Extensibility;
 using CoverflowAltTab.Platform;
@@ -17,7 +18,12 @@ public sealed class DebugWindowController
             DataContext = _viewModel,
         };
         _dispatcher = _window.Dispatcher;
+        _viewModel.PropertyChanged += OnViewModelPropertyChanged;
     }
+
+    public event EventHandler<string>? RendererSelected;
+
+    public event EventHandler<string>? AnimationSelected;
 
     public DebugWindow Window => _window;
 
@@ -73,5 +79,49 @@ public sealed class DebugWindowController
                     $"Filters: {result.RegisteredWindowFilters}, Sorts: {result.RegisteredSortStrategies}, Dismiss: {result.RegisteredOverlayDismissBehaviors}",
                     result.Message)));
         });
+    }
+
+    public void InitializeOverlaySettings(
+        IEnumerable<string> availableRendererIds,
+        IEnumerable<string> availableAnimationIds,
+        string selectedRendererId,
+        string selectedAnimationId)
+    {
+        _dispatcher.BeginInvoke(() =>
+        {
+            foreach (var id in availableRendererIds)
+            {
+                _viewModel.AvailableRendererIds.Add(id);
+            }
+
+            foreach (var id in availableAnimationIds)
+            {
+                _viewModel.AvailableAnimationIds.Add(id);
+            }
+
+            _viewModel.SelectedRendererId = selectedRendererId;
+            _viewModel.SelectedAnimationId = selectedAnimationId;
+        });
+    }
+
+    private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        switch (e.PropertyName)
+        {
+            case nameof(DebugWindowViewModel.SelectedRendererId):
+                if (_viewModel.SelectedRendererId is { } rendererId)
+                {
+                    RendererSelected?.Invoke(this, rendererId);
+                }
+
+                break;
+            case nameof(DebugWindowViewModel.SelectedAnimationId):
+                if (_viewModel.SelectedAnimationId is { } animationId)
+                {
+                    AnimationSelected?.Invoke(this, animationId);
+                }
+
+                break;
+        }
     }
 }

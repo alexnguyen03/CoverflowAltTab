@@ -5,6 +5,7 @@ using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using CoverflowAltTab.Core.Models;
+using CoverflowAltTab.UI.Motion;
 using CoverflowAltTab.UI.Rendering;
 
 namespace CoverflowAltTab.UI;
@@ -19,7 +20,6 @@ public partial class OverlayWindow : Window
     private const double SideScale = 0.72d;
     private const double HorizontalGap = 60d;
     private const double StepOffset = (CardWidth * MainScale / 2d) + HorizontalGap + (CardWidth * SideScale / 2d);
-    private static readonly Duration AnimationDuration = new(TimeSpan.FromMilliseconds(450));
 
     // Role -1 = left, 0 = center, +1 = right, indexed as Roles[role + 1].
     private static readonly (double X, double Scale, double Opacity, int Z)[] Roles =
@@ -36,6 +36,8 @@ public partial class OverlayWindow : Window
     private readonly nint[] _cardHandle = new nint[3];
     private int _lastSelectedIndex = -1;
     private int _lastCount;
+    private OverlayLayoutKind _layoutKind = OverlayLayoutKind.List;
+    private OverlayRenderModel? _stageManagerModel;
 
     public OverlayWindow()
     {
@@ -106,7 +108,10 @@ public partial class OverlayWindow : Window
 
     public void ShowCoverflow(OverlayRenderModel model)
     {
-        if (!model.UsesFreeformLayout || model.Items.Count == 0)
+        _layoutKind = model.LayoutKind;
+        _stageManagerModel = model.LayoutKind == OverlayLayoutKind.StageManager ? model : null;
+
+        if (model.LayoutKind != OverlayLayoutKind.Coverflow || model.Items.Count == 0)
         {
             HideCoverflow();
             return;
@@ -126,7 +131,10 @@ public partial class OverlayWindow : Window
 
     public void UpdateCoverflow(OverlayRenderModel model)
     {
-        if (!model.UsesFreeformLayout || model.Items.Count == 0)
+        _layoutKind = model.LayoutKind;
+        _stageManagerModel = model.LayoutKind == OverlayLayoutKind.StageManager ? model : null;
+
+        if (model.LayoutKind != OverlayLayoutKind.Coverflow || model.Items.Count == 0)
         {
             HideCoverflow();
             return;
@@ -154,6 +162,12 @@ public partial class OverlayWindow : Window
 
     public IReadOnlyList<nint> GetSessionWindowHandles()
     {
+        if (_layoutKind == OverlayLayoutKind.StageManager)
+        {
+            return _stageManagerModel?.Items.Select(item => item.WindowHandle).Distinct().ToList()
+                   ?? new List<nint>();
+        }
+
         return _cardHandle.Where(handle => handle != 0).Distinct().ToList();
     }
 
@@ -166,13 +180,47 @@ public partial class OverlayWindow : Window
             return false;
         }
 
+        if (_layoutKind == OverlayLayoutKind.StageManager)
+        {
+            return TryGetStageManagerPreviewBounds(windowHandle, out bounds);
+        }
+
         var cardIndex = Array.IndexOf(_cardHandle, windowHandle);
         if (cardIndex < 0)
         {
             return false;
         }
 
-        var surface = _cards[cardIndex].Element;
+        return TryComputeScreenBounds(_cards[cardIndex].Element, out bounds);
+    }
+
+    private bool TryGetStageManagerPreviewBounds(nint windowHandle, out WindowBounds bounds)
+    {
+        bounds = default;
+
+        if (DataContext is not OverlayViewModel viewModel)
+        {
+            return false;
+        }
+
+        var item = viewModel.Windows.FirstOrDefault(window => window.WindowHandle == windowHandle);
+        if (item is null)
+        {
+            return false;
+        }
+
+        if (StageManagerItems.ItemContainerGenerator.ContainerFromItem(item) is not FrameworkElement container)
+        {
+            return false;
+        }
+
+        return TryComputeScreenBounds(container, out bounds);
+    }
+
+    private bool TryComputeScreenBounds(FrameworkElement surface, out WindowBounds bounds)
+    {
+        bounds = default;
+
         if (surface.ActualWidth <= 0 || surface.ActualHeight <= 0)
         {
             return false;
@@ -284,16 +332,17 @@ public partial class OverlayWindow : Window
             return;
         }
 
-        var ease = new CubicEase { EasingMode = EasingMode.EaseInOut };
+        var strategy = AnimationStrategyRegistry.Current;
+        var duration = strategy.Duration;
 
         card.Translate.BeginAnimation(TranslateTransform.XProperty,
-            new DoubleAnimation(x, AnimationDuration) { EasingFunction = ease });
+            new DoubleAnimation(x, duration) { EasingFunction = strategy.CreateEasing() });
         card.Scale.BeginAnimation(ScaleTransform.ScaleXProperty,
-            new DoubleAnimation(scale, AnimationDuration) { EasingFunction = ease });
+            new DoubleAnimation(scale, duration) { EasingFunction = strategy.CreateEasing() });
         card.Scale.BeginAnimation(ScaleTransform.ScaleYProperty,
-            new DoubleAnimation(scale, AnimationDuration) { EasingFunction = ease });
+            new DoubleAnimation(scale, duration) { EasingFunction = strategy.CreateEasing() });
         card.Element.BeginAnimation(UIElement.OpacityProperty,
-            new DoubleAnimation(opacity, AnimationDuration) { EasingFunction = ease });
+            new DoubleAnimation(opacity, duration) { EasingFunction = strategy.CreateEasing() });
     }
 
     private static int InferDirection(int oldIndex, int newIndex, int count)

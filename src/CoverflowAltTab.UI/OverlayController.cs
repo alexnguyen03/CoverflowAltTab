@@ -6,7 +6,7 @@ namespace CoverflowAltTab.UI;
 
 public sealed class OverlayController : IDisposable
 {
-    private readonly IOverlayRenderer _renderer;
+    private IOverlayRenderer _renderer;
     private readonly OverlayViewModel _viewModel = new();
     private readonly OverlayWindow _window;
     private OverlayRenderModel? _currentModel;
@@ -95,6 +95,11 @@ public sealed class OverlayController : IDisposable
     }
 
     public nint WindowHandle => _window.WindowHandle;
+
+    public void SetRenderer(IOverlayRenderer renderer)
+    {
+        _renderer = renderer;
+    }
 
     private void OnCommandRequested(object? sender, OverlayCommandRequestedEventArgs e)
     {

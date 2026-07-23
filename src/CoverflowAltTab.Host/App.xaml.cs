@@ -6,13 +6,14 @@ using CoverflowAltTab.Host.Debug;
 using CoverflowAltTab.Host.Infrastructure;
 using CoverflowAltTab.Platform;
 using CoverflowAltTab.UI;
+using CoverflowAltTab.UI.Configuration;
+using CoverflowAltTab.UI.Motion;
 using CoverflowAltTab.UI.Rendering;
 
 namespace CoverflowAltTab.Host;
 
 public partial class App : Application
 {
-    private const bool UseCoverflowRenderer = true;
     private IHotkeyService? _hotkeyService;
     private IKeyboardMonitorService? _keyboardMonitorService;
     private SwitcherApplication? _switcherApplication;
@@ -33,6 +34,9 @@ public partial class App : Application
             logger.Error("Unhandled app domain exception.", args.ExceptionObject as Exception);
         };
 
+        var settings = SettingsService.Load();
+        AnimationStrategyRegistry.SetCurrent(settings.AnimationId);
+
         var registry = new ExtensionRegistry();
         var loader = new ExtensionLoader(registry, logger);
         var loadResults = loader.LoadFromDirectory(Path.Combine(AppContext.BaseDirectory, "extensions"));
@@ -46,6 +50,28 @@ public partial class App : Application
         _debugWindowController.SetLastAction("Startup complete");
         _debugWindowController.SetExtensions(loadResults);
 
+        var overlayController = new OverlayController(OverlayRendererRegistry.Resolve(settings.RendererId));
+
+        _debugWindowController.InitializeOverlaySettings(
+            OverlayRendererRegistry.AvailableIds,
+            AnimationStrategyRegistry.AvailableIds,
+            settings.RendererId,
+            settings.AnimationId);
+        _debugWindowController.RendererSelected += (_, rendererId) =>
+        {
+            settings = settings with { RendererId = rendererId };
+            SettingsService.Save(settings);
+            overlayController.SetRenderer(OverlayRendererRegistry.Resolve(rendererId));
+            logger.Info($"Overlay renderer switched to '{rendererId}' from debug window.");
+        };
+        _debugWindowController.AnimationSelected += (_, animationId) =>
+        {
+            settings = settings with { AnimationId = animationId };
+            SettingsService.Save(settings);
+            AnimationStrategyRegistry.SetCurrent(animationId);
+            logger.Info($"Overlay animation switched to '{animationId}' from debug window.");
+        };
+
         _hotkeyService = new HotkeyService();
         _keyboardMonitorService = new LowLevelKeyboardMonitorService();
         _switcherApplication = new SwitcherApplication(
@@ -54,7 +80,7 @@ public partial class App : Application
             new ForegroundWindowService(),
             new WindowActivationService(),
             new DwmWindowThumbnailService(),
-            new OverlayController(CreateOverlayRenderer()),
+            overlayController,
             _hotkeyService,
             _keyboardMonitorService,
             registry,
@@ -72,12 +98,5 @@ public partial class App : Application
         _keyboardMonitorService?.Dispose();
         _hotkeyService?.Dispose();
         base.OnExit(e);
-    }
-
-    private static IOverlayRenderer CreateOverlayRenderer()
-    {
-        return UseCoverflowRenderer
-            ? new CoverflowOverlayRenderer()
-            : new ListOverlayRenderer();
     }
 }

@@ -10,7 +10,7 @@ public sealed class OverlayViewModel : INotifyPropertyChanged
     private string _headerTitle = string.Empty;
     private string _headerSubtitle = string.Empty;
     private string _rendererId = string.Empty;
-    private bool _usesFreeformLayout;
+    private OverlayLayoutKind _layoutKind = OverlayLayoutKind.List;
     private double _stageWidth;
     private double _stageHeight;
     private string _selectedTitle = string.Empty;
@@ -62,23 +62,26 @@ public sealed class OverlayViewModel : INotifyPropertyChanged
         }
     }
 
-    public bool UsesFreeformLayout
+    public OverlayLayoutKind LayoutKind
     {
-        get => _usesFreeformLayout;
+        get => _layoutKind;
         set
         {
-            if (_usesFreeformLayout == value)
+            if (_layoutKind == value)
             {
                 return;
             }
 
-            _usesFreeformLayout = value;
+            _layoutKind = value;
             OnPropertyChanged();
+            OnPropertyChanged(nameof(UsesFreeformLayout));
             OnPropertyChanged(nameof(UsesListLayout));
         }
     }
 
-    public bool UsesListLayout => !UsesFreeformLayout;
+    public bool UsesFreeformLayout => LayoutKind != OverlayLayoutKind.List;
+
+    public bool UsesListLayout => LayoutKind == OverlayLayoutKind.List;
 
     public double StageWidth
     {
@@ -150,7 +153,7 @@ public sealed class OverlayViewModel : INotifyPropertyChanged
         HeaderTitle = model.HeaderTitle;
         HeaderSubtitle = model.HeaderSubtitle;
         RendererId = model.RendererId;
-        UsesFreeformLayout = model.UsesFreeformLayout;
+        LayoutKind = model.LayoutKind;
         StageWidth = model.StageWidth;
         StageHeight = model.StageHeight;
         SelectedTitle = GetSelectedTitle(model);
@@ -173,7 +176,7 @@ public sealed class OverlayViewModel : INotifyPropertyChanged
             target.ZIndex = source.ZIndex;
         }
 
-        UsesFreeformLayout = model.UsesFreeformLayout;
+        LayoutKind = model.LayoutKind;
         StageWidth = model.StageWidth;
         StageHeight = model.StageHeight;
         SelectedTitle = GetSelectedTitle(model);
@@ -185,7 +188,7 @@ public sealed class OverlayViewModel : INotifyPropertyChanged
         HeaderTitle = string.Empty;
         HeaderSubtitle = string.Empty;
         RendererId = string.Empty;
-        UsesFreeformLayout = false;
+        LayoutKind = OverlayLayoutKind.List;
         StageWidth = 0d;
         StageHeight = 0d;
         SelectedTitle = string.Empty;
