@@ -14,10 +14,10 @@ public partial class OverlayWindow : Window
     // Fixed 3-slot coverflow (left/center/right), driven directly from code-behind via
     // TranslateTransform + ScaleTransform + DoubleAnimation - the same technique as the
     // CarouselDemo prototype - instead of MVVM/ItemsControl binding.
-    private const double CardWidth = 460d;
+    private const double CardWidth = 400d;
     private const double MainScale = 1.5d;
     private const double SideScale = 0.72d;
-    private const double HorizontalGap = 100d;
+    private const double HorizontalGap = 60d;
     private const double StepOffset = (CardWidth * MainScale / 2d) + HorizontalGap + (CardWidth * SideScale / 2d);
     private static readonly Duration AnimationDuration = new(TimeSpan.FromMilliseconds(450));
 

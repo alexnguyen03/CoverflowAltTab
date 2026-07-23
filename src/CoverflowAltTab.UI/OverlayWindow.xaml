@@ -71,8 +71,8 @@
                         IsHitTestVisible="False">
 
                     <Grid x:Name="LeftCard"
-                          Width="460" Height="300"
-                          Canvas.Left="-230" Canvas.Top="-150"
+                          Width="400" Height="260"
+                          Canvas.Left="-200" Canvas.Top="-130"
                           RenderTransformOrigin="0.5,0.5">
                         <Grid.RenderTransform>
                             <TransformGroup>
@@ -83,8 +83,8 @@
                     </Grid>
 
                     <Grid x:Name="CenterCard"
-                          Width="460" Height="300"
-                          Canvas.Left="-230" Canvas.Top="-150"
+                          Width="400" Height="260"
+                          Canvas.Left="-200" Canvas.Top="-130"
                           RenderTransformOrigin="0.5,0.5">
                         <Grid.RenderTransform>
                             <TransformGroup>
@@ -95,8 +95,8 @@
                     </Grid>
 
                     <Grid x:Name="RightCard"
-                          Width="460" Height="300"
-                          Canvas.Left="-230" Canvas.Top="-150"
+                          Width="400" Height="260"
+                          Canvas.Left="-200" Canvas.Top="-130"
                           RenderTransformOrigin="0.5,0.5">
                         <Grid.RenderTransform>
                             <TransformGroup>
@@ -114,7 +114,8 @@
                         Padding="24,10"
                         Background="#CC141A20"
                         CornerRadius="20"
-                        IsHitTestVisible="False">
+                        IsHitTestVisible="False"
+                        Panel.ZIndex="1000">
                     <TextBlock Text="{Binding SelectedTitle}"
                                Foreground="#FFF4FBFF"
                                FontSize="16"

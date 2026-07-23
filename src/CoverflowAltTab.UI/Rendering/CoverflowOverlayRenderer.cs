@@ -4,15 +4,15 @@ namespace CoverflowAltTab.UI.Rendering;
 
 public sealed class CoverflowOverlayRenderer : IOverlayRenderer
 {
-    private const double StageWidth = 1600d;
-    private const double StageHeight = 550d;
-    private const double CardWidth = 460d;
-    private const double CardHeight = 300d;
+    private const double StageWidth = 1400d;
+    private const double StageHeight = 650d;
+    private const double CardWidth = 400d;
+    private const double CardHeight = 260d;
     private const double CenterX = StageWidth / 2d;
     private const double CenterY = StageHeight / 2d;
     private const double MainScale = 1.5d;
     private const double SideScale = 0.72d;
-    private const double HorizontalGap = 100d;
+    private const double HorizontalGap = 60d;
     private const double StepOffset = (CardWidth * MainScale / 2d) + HorizontalGap + (CardWidth * SideScale / 2d);
 
     public string Id => "builtin.coverflow";

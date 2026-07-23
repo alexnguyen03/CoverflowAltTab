@@ -44,10 +44,10 @@ internal static class Win32
     [DllImport("user32.dll")]
     internal static extern bool IsIconic(nint hWnd);
 
-    [DllImport("user32.dll", SetLastError = true)]
+    [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode, EntryPoint = "GetWindowTextW")]
     internal static extern int GetWindowText(nint hWnd, StringBuilder lpString, int nMaxCount);
 
-    [DllImport("user32.dll", SetLastError = true)]
+    [DllImport("user32.dll", SetLastError = true, EntryPoint = "GetWindowTextLengthW")]
     internal static extern int GetWindowTextLength(nint hWnd);
 
     [DllImport("user32.dll")]
